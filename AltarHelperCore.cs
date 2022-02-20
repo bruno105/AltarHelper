@@ -10,33 +10,7 @@ using System.Text.RegularExpressions;
 
 namespace AltarHelper
 {
-    public class Filter
-    {
-        public string Mod { get; set; }
-        public int Weight { get; set; }
-        public string Choice { get; set; }
-        public bool Good { get; set; }
-
-    }
-
-    public class Altar 
-    {
-        public Select Upper { get; set; }
-        public Select Downer { get; set; }
-    
-    }
-
-
-    public class Select
-    {
-        public string Choice { get; set; }
-        public string Buff { get; set; }
-        public string Debuff { get; set; }
-        public int BuffWeight { get; set; }
-        public int DebuffWeight { get; set; }
-        public bool BuffGood { get; set; }
-        public bool DebuffGood { get; set; }
-    }
+   
 
     public class AltarHelperCore : BaseSettingsPlugin<Settings>
     {
@@ -138,7 +112,7 @@ namespace AltarHelper
         public override void Render()
         {
             if(GameController.Area.CurrentArea.IsHideout ||
-                GameController.Area.CurrentArea.IsTown)
+                GameController.Area.CurrentArea.IsTown || GameController.IngameState.IngameUi == null || GameController.IngameState.IngameUi.ItemsOnGroundLabelsVisible == null)
             {
                 return;
             }
@@ -146,22 +120,22 @@ namespace AltarHelper
             foreach(var label in GameController.IngameState.IngameUi.ItemsOnGroundLabelsVisible)
             {
 
-
+                if (label == null || label.Label == null) continue;
     
 
                 if (!label.ItemOnGround.Metadata.Contains("TangleAltar") && !label.ItemOnGround.Metadata.Contains("FireAltar")) continue;
-             
-                //DebugWindow.LogError($"Entrou");
+
+                
                 var upper = label.Label?.GetChildAtIndex(0);
                 var downer = label.Label?.GetChildAtIndex(1);
                 if (upper == null || downer == null) continue;
-
+               
                 string upperText = upper.GetChildAtIndex(1)?.Text;
                 string downerText = downer.GetChildAtIndex(1)?.Text;
 
 
                 if (upperText == null || downerText == null) continue;
-
+                
 
                 Altar altar = getAltarData(upperText, downerText);
 
@@ -177,12 +151,13 @@ namespace AltarHelper
 
 
                 if (altar == null) continue;
-
-                if(altar.Upper.BuffWeight > altar.Downer.BuffWeight)
+                
+                if (altar.Upper.BuffWeight > altar.Downer.BuffWeight)
                 {
                    if(altar.Upper.BuffGood) Graphics.DrawFrame(upper.GetClientRectCache, Settings.GoodColor, Settings.FrameThickness);
                    if(altar.Upper.DebuffWeight - altar.Upper.BuffWeight > 0) Graphics.DrawFrame(upper.GetClientRectCache, Settings.BadColor, Settings.FrameThickness);
                 }
+
                 else
                 {
                    if(altar.Downer.BuffGood) Graphics.DrawFrame(downer.GetClientRectCache, Settings.GoodColor, Settings.FrameThickness);
@@ -195,7 +170,7 @@ namespace AltarHelper
 
             }
             
-            base.Render();
+            //base.Render();
         }
 
         public override Job Tick()
@@ -257,9 +232,10 @@ namespace AltarHelper
 
 
 
-
-            Filter f1 = FilterList.FirstOrDefault(x => x.Mod.Contains(selecterBuff));
-            Filter f2 = FilterList.FirstOrDefault(x => x.Mod.Contains(selecterDebuff));
+            Filter f1 = FilterList.FirstOrDefault(x => x.Mod == (selecterBuff));
+             Filter f2 = FilterList.FirstOrDefault(x => x.Mod == (selecterDebuff));
+            //   Filter f1 = FilterList.FirstOrDefault(x => x.Mod.Contains(selecterBuff));
+            // Filter f2 = FilterList.FirstOrDefault(x => x.Mod.Contains(selecterDebuff));
 
             //DebugWindow.LogError(selecterDebuff);
             //foreach(Filter f in FilterList)
@@ -283,6 +259,35 @@ namespace AltarHelper
             
 
             return  s;
+        }
+
+
+        public class Filter
+        {
+            public string Mod { get; set; }
+            public int Weight { get; set; }
+            public string Choice { get; set; }
+            public bool Good { get; set; }
+
+        }
+
+        public class Altar
+        {
+            public Select Upper { get; set; }
+            public Select Downer { get; set; }
+
+        }
+
+
+        public class Select
+        {
+            public string Choice { get; set; }
+            public string Buff { get; set; }
+            public string Debuff { get; set; }
+            public int BuffWeight { get; set; }
+            public int DebuffWeight { get; set; }
+            public bool BuffGood { get; set; }
+            public bool DebuffGood { get; set; }
         }
     }
 }
