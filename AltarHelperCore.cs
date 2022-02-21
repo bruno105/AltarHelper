@@ -121,7 +121,7 @@ namespace AltarHelper
             {
 
                 if (label == null || label.Label == null) continue;
-    
+                if (label.ItemOnGround == null || label.ItemOnGround.Metadata == null) continue;
 
                 if (!label.ItemOnGround.Metadata.Contains("TangleAltar") && !label.ItemOnGround.Metadata.Contains("FireAltar")) continue;
 
@@ -135,8 +135,8 @@ namespace AltarHelper
 
 
                 if (upperText == null || downerText == null) continue;
-                
 
+                //if (upperText.Contains("Gain Projectiles are fired in random directions") || downerText.Contains("Gain Projectiles are fired in random directions")) DebugWindow.LogError("PROJECTILEESSSSSSSSS");
                 Altar altar = getAltarData(upperText, downerText);
 
                 if(Settings.Debug == true)
@@ -233,7 +233,13 @@ namespace AltarHelper
 
 
             Filter f1 = FilterList.FirstOrDefault(x => x.Mod == (selecterBuff));
-             Filter f2 = FilterList.FirstOrDefault(x => x.Mod == (selecterDebuff));
+            Filter f2 = FilterList.FirstOrDefault(x => x.Mod == (selecterDebuff));
+
+
+            if (f1 == null && !selecterBuff.Contains("chance to be Duplicated")) f1 = FilterList.FirstOrDefault(x => x.Mod.Contains(selecterBuff));
+            if (f2 == null && !selecterDebuff.Contains("chance to be Duplicated")) f2 = FilterList.FirstOrDefault(x => x.Mod.Contains(selecterDebuff));
+
+
             //   Filter f1 = FilterList.FirstOrDefault(x => x.Mod.Contains(selecterBuff));
             // Filter f2 = FilterList.FirstOrDefault(x => x.Mod.Contains(selecterDebuff));
 
