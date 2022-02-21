@@ -1,0 +1,44 @@
+//Mod|Weight|Choice !! Dont remove #Good and #Bad line
+#Good
+//Scarab
+(1–3)% chance to drop an additional Scarab|100|Minion
+Drops (1–3) additional Scarab|90|Boss
+Scarabs dropped by slain Enemies have (10–15)% chance to be Duplicated|95|Player
+
+//Basic Currency And Maps
+(1–3)% chance to drop an additional Basic Currency Item|90|Minion
+Drops (1–3) additional Basic Currency Item|70|Boss
+Basic Currency Items dropped by slain Enemies have (10–15)% chance to be Duplicated|75|Player
+Maps dropped by slain Enemies have (10–15)% chance to be Duplicated|70|Player
+
+//Eldrich Currency
+(0.5–1.5)% chance to drop an additional Eldritch Ichor Currency Item|65|Minion
+(0.5–1.5)% chance to drop an additional Eldritch Ember Currency Item|65|Minion
+Drops (1–2) additional Eldritch Ichor Currency Item|60|Boss
+Drops (1–2) additional Eldritch Ember Currency Item|60|Boss
+
+//Gems
+(1–3)% chance to drop an additional Gem|20|Minion
+Drops (1–3) additional Gem|20|Boss
+Gems dropped by slain Enemies have (10–15)% chance to be Duplicated|20|Player
+
+//Uniques
+(1–3)% chance to drop an additional Unique Item|30|Minion
+Drops (1–3) additional Unique Item|30|Boss
+Unique Items dropped by slain Enemies have (10–15)% chance to be Duplicated|30|Player
+
+//Implicite Modifiers
+1% chance to drop an additional Item with an Eater of Worlds Implicit Modifier|15|Minion
+(1–2)% chance to drop an additional Item with a Searing Exarch Implicit Modifier|15|Minion
+Drops (1–2) additional Item with an Eater of Worlds Implicit Modifier|15|Boss
+Drops (1–2) additional Item with a Searing Exarch Implicit Modifier|15|Boss
+
+//Quantity
+(15–35)% increased Rarity of Items found in this Area|35|Player
+Maps dropped by slain Enemies have (10–15)% chance to be Duplicated
+
+#Bad
+Projectiles are fired in random directions|9999|Player
+
+
+
