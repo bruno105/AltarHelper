@@ -62,14 +62,14 @@ namespace AltarHelper
             foreach (string line in lines)
             {
                 if (line.Length < 4) continue;
-                if (line.Contains("//")) continue;
+                if (line.Contains("/")) continue;
                 if (line.Contains("#Good"))
                 {
                     DebugWindow.LogMsg("Entrou Good");
                     good = true;
                     continue;
                 }
-                if (line.Contains("#Bad"))
+                if (line.Trim() == "#Bad")
                 {
                     DebugWindow.LogMsg("Entrou Bad");
                     good = false;
@@ -240,43 +240,46 @@ namespace AltarHelper
                 }
 
 
-                if(UpperWeight < 0 || DownerWeight < 0)
-                {
-                    Graphics.DrawFrame(upper.GetClientRectCache, Settings.BadColor, Settings.FrameThickness);
-                    continue;
-                }
+              
 
-                if(UpperWeight > DownerWeight)
+                if(UpperWeight > DownerWeight && UpperWeight > 0)
                 {                   
                     
                     Graphics.DrawFrame(upper.GetClientRectCache, getColor(altar.Upper.Choice), Settings.FrameThickness);
+                    continue;
 
                 }
-                else
+                else if( DownerWeight > UpperWeight && DownerWeight > 0)
                 {                    
                     Graphics.DrawFrame(downer.GetClientRectCache, getColor(altar.Downer.Choice), Settings.FrameThickness);
+                    continue;
 
+                }
+                if (UpperWeight < 0 || DownerWeight < 0)
+                {
+                    if(UpperWeight < 0) Graphics.DrawFrame(upper.GetClientRectCache, Settings.BadColor, Settings.FrameThickness);
+                    if(DownerWeight < 0) Graphics.DrawFrame(downer.GetClientRectCache, Settings.BadColor, Settings.FrameThickness);
+                    continue;
                 }
 
 
+                /* if (altar.Upper.BuffWeight > altar.Downer.BuffWeight)
+                 {
+                     SharpDX.Color color = altar.Upper.Choice.Contains("Minions") ? Settings.MinionColor : Settings.BossColor;                   
+                    // if (Settings.SwitchMode.Value == 2 && (altar.Upper.Choice.Contains("boss")) || Settings.SwitchMode.Value == 3 && (altar.Upper.Choice.Contains("Minions"))) continue;
+                     if (altar.Upper.BuffGood) Graphics.DrawFrame(upper.GetClientRectCache, color, Settings.FrameThickness);
+                     if(altar.Upper.DebuffWeight - altar.Upper.BuffWeight > 0) Graphics.DrawFrame(upper.GetClientRectCache, Settings.BadColor, Settings.FrameThickness);
+                 }
+                 else
+                 {
+                     SharpDX.Color color = altar.Downer.Choice.Contains("Minions") ? Settings.MinionColor : Settings.BossColor;
+                  //   if (Settings.SwitchMode.Value == 2 && (!altar.Downer.Choice.Contains("Minions") || !altar.Downer.Choice.Contains("Player")) || (Settings.SwitchMode.Value == 3 && altar.Downer.Choice.Contains("Minions"))) continue;
+                     if (altar.Downer.BuffGood) Graphics.DrawFrame(downer.GetClientRectCache, color, Settings.FrameThickness);
+                     if(altar.Downer.DebuffWeight - altar.Downer.BuffWeight > 0) Graphics.DrawFrame(downer.GetClientRectCache, Settings.BadColor, Settings.FrameThickness);
+                 }*/
 
-               /* if (altar.Upper.BuffWeight > altar.Downer.BuffWeight)
-                {
-                    SharpDX.Color color = altar.Upper.Choice.Contains("Minions") ? Settings.MinionColor : Settings.BossColor;                   
-                   // if (Settings.SwitchMode.Value == 2 && (altar.Upper.Choice.Contains("boss")) || Settings.SwitchMode.Value == 3 && (altar.Upper.Choice.Contains("Minions"))) continue;
-                    if (altar.Upper.BuffGood) Graphics.DrawFrame(upper.GetClientRectCache, color, Settings.FrameThickness);
-                    if(altar.Upper.DebuffWeight - altar.Upper.BuffWeight > 0) Graphics.DrawFrame(upper.GetClientRectCache, Settings.BadColor, Settings.FrameThickness);
-                }
-                else
-                {
-                    SharpDX.Color color = altar.Downer.Choice.Contains("Minions") ? Settings.MinionColor : Settings.BossColor;
-                 //   if (Settings.SwitchMode.Value == 2 && (!altar.Downer.Choice.Contains("Minions") || !altar.Downer.Choice.Contains("Player")) || (Settings.SwitchMode.Value == 3 && altar.Downer.Choice.Contains("Minions"))) continue;
-                    if (altar.Downer.BuffGood) Graphics.DrawFrame(downer.GetClientRectCache, color, Settings.FrameThickness);
-                    if(altar.Downer.DebuffWeight - altar.Downer.BuffWeight > 0) Graphics.DrawFrame(downer.GetClientRectCache, Settings.BadColor, Settings.FrameThickness);
-                }*/
 
 
-            
 
 
             }
