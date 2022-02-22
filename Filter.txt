@@ -35,7 +35,7 @@ Drops (1–2) additional Item with a Searing Exarch Implicit Modifier|15|Boss
 
 //Quantity
 (15–35)% increased Rarity of Items found in this Area|35|Player
-Maps dropped by slain Enemies have (10–15)% chance to be Duplicated
+Maps dropped by slain Enemies have (10–15)% chance to be Duplicated|40|Player
 
 #Bad
 Projectiles are fired in random directions|9999|Player
