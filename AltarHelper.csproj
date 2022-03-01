@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{5A0701E1-A0E3-48D0-8406-ED0F6B6F3380}</ProjectGuid>
+    <ProjectGuid>{5BC5D655-0D06-41BE-B50F-52EDCC68782C}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>AltarHelper</RootNamespace>
@@ -26,22 +26,22 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\..\PoeHelper\PrivateHud\Plugins\Compiled\UniqueLootHelper\</OutputPath>
+    <OutputPath>..\..\PoeHelper\PrivateHud\Plugins\Compiled\AltarHelper\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ExileCore">
-      <HintPath>..\..\..\ExileCore.dll</HintPath>
+      <HintPath>..\..\PoeHelper\PrivateHud\ExileCore.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="SharpDX">
-      <HintPath>..\..\..\SharpDX.dll</HintPath>
+      <HintPath>..\..\PoeHelper\PrivateHud\SharpDX.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="SharpDX.Mathematics">
-      <HintPath>..\..\..\SharpDX.Mathematics.dll</HintPath>
+      <HintPath>..\..\PoeHelper\PrivateHud\SharpDX.Mathematics.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -57,11 +57,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AltarHelperCore.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Settings.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>"C:\Users\bruno\Desktop\DreamPoeBot\PoEHelper\Plugins\Source\AltarHelper\Copy.ahk"</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
 </Project>
