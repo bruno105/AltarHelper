@@ -26,23 +26,24 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\..\PoeHelper\PrivateHud\Plugins\Compiled\UniqueLootHelper\</OutputPath>
+    <OutputPath>..\..\Compiled\AltarHelper\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+  </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ExileCore">
+    <Reference Include="ExileCore, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\ExileCore.dll</HintPath>
-      <Private>False</Private>
     </Reference>
     <Reference Include="SharpDX">
       <HintPath>..\..\..\SharpDX.dll</HintPath>
-      <Private>False</Private>
     </Reference>
     <Reference Include="SharpDX.Mathematics">
       <HintPath>..\..\..\SharpDX.Mathematics.dll</HintPath>
-      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -62,6 +63,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>"C:\Users\bruno\Desktop\DreamPoeBot\PoEHelper\Plugins\Source\AltarHelper\Copy.ahk"</PostBuildEvent>
+    <PostBuildEvent>"C:\Users\bruno\OneDrive\Área de Trabalho\DreamPoeBot\01 PoEHelper\Plugins\Source\AltarHelper\Copy.ahk"</PostBuildEvent>
   </PropertyGroup>
 </Project>

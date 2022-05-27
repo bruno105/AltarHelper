@@ -157,20 +157,26 @@ namespace AltarHelper
 
                 if (label == null || label.Label == null) continue;
                 if (label.ItemOnGround == null || label.ItemOnGround.Metadata == null) continue;
+                
 
-                if (!label.ItemOnGround.Metadata.Contains("TangleAltar") && !label.ItemOnGround.Metadata.Contains("FireAltar")) continue;
+                var Altar = label.ItemOnGround?.Metadata;
+                
+                if (Altar == null || (!Altar.Contains("TangleAltar") && !Altar.Contains("FireAltar"))) continue;
 
                 
                 var upper = label.Label?.GetChildAtIndex(0);
                 var downer = label.Label?.GetChildAtIndex(1);
                 if (upper == null || downer == null) continue;
                
-                string upperText = upper.GetChildAtIndex(1)?.Text;
-                string downerText = downer.GetChildAtIndex(1)?.Text;
+                string upperText = upper.GetChildAtIndex(1)?.GetText(512).Trim();
+                string downerText = downer.GetChildAtIndex(1)?.GetText(512).Trim();
 
-
+                if (Settings.Debug == true) DebugWindow.LogError($"AltarDowner Lenght 512: {downer.GetChildAtIndex(1)?.GetText(512).Trim()}");
+                if (Settings.Debug == true) DebugWindow.LogError($"AltarUpper Lenght 512: {upper.GetChildAtIndex(1)?.GetText(512).Trim()}");
                 if (upperText == null || downerText == null) continue;
 
+
+               // continue;
                 //if (upperText.Contains("Gain Projectiles are fired in random directions") || downerText.Contains("Gain Projectiles are fired in random directions")) DebugWindow.LogError("PROJECTILEESSSSSSSSS");
                 Altar altar = getAltarData(upperText, downerText);
 
@@ -242,7 +248,7 @@ namespace AltarHelper
 
               
 
-                if(UpperWeight > DownerWeight && UpperWeight > 0)
+                if(UpperWeight >= DownerWeight && UpperWeight > 0)
                 {                   
                     
                     Graphics.DrawFrame(upper.GetClientRectCache, getColor(altar.Upper.Choice), Settings.FrameThickness);
