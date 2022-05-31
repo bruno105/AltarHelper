@@ -17,7 +17,7 @@ namespace AltarHelper
         public ColorNode MinionColor { get; set; } = new ColorNode(SharpDX.Color.LightGreen);
         public ColorNode PlayerColor { get; set; } = new ColorNode(SharpDX.Color.LightCyan);
         public ColorNode BossColor { get; set; } = new ColorNode(SharpDX.Color.LightBlue);
-        public ColorNode BadColor { get; set; } = new ColorNode(SharpDX.Color.Transparent);
+        public ColorNode BadColor { get; set; } = new ColorNode(SharpDX.Color.Black);
         [Menu("Switch Mode","1 = Any | 2 =  Only Minions and Player | 3 = Only Boss and Player ")]
         public RangeNode<int> SwitchMode { get; set; } = new RangeNode<int>(1, 1, 3); // Any | Only Minions and Player | Only Boss and Player
         [Menu("Minion Weight", "Add this value to minions mod Type")]

@@ -10,7 +10,7 @@ using System.Text.RegularExpressions;
 
 namespace AltarHelper
 {
-   
+
 
     public class AltarHelperCore : BaseSettingsPlugin<Settings>
     {
@@ -45,7 +45,7 @@ namespace AltarHelper
             {
                 streamWriter.WriteLine("//Name|Weight|Choice");
                 streamWriter.WriteLine("#Good");
-              //  streamWriter.WriteLine("");
+                //  streamWriter.WriteLine("");
                 streamWriter.WriteLine("Drops (1–3) additional Scarab|10|Boss");
                 streamWriter.WriteLine("#Bad");
                 streamWriter.WriteLine("");
@@ -78,11 +78,11 @@ namespace AltarHelper
 
                 string[] splitedLine = line.Split('|');
                 Filter f = new Filter();
-                
-                f.Mod = splitedLine[0].Length > 0 ? splitedLine[0] :  "-1";
+
+                f.Mod = splitedLine[0].Length > 0 ? splitedLine[0] : "-1";
                 f.Weight = splitedLine[1].Length > 0 ? Int32.Parse(splitedLine[1]) : -1;
 
-                if(splitedLine.Length == 2)
+                if (splitedLine.Length == 2)
                 {
                     f.Choice = "Any";
                 }
@@ -90,7 +90,7 @@ namespace AltarHelper
                 {
                     f.Choice = splitedLine[2].Length > 0 ? splitedLine[2] : "Any";
                 }
-                
+
                 f.Good = good;
 
                 if (f.Mod == "-1" || f.Weight == -1) continue;
@@ -99,7 +99,7 @@ namespace AltarHelper
                 {
                     f.Mod = f.Mod.Substring(f.Mod.IndexOf(")") + 1);
                 }
-                else if(f.Mod.Contains("chance to be Duplicated") && f.Mod.Contains("("))
+                else if (f.Mod.Contains("chance to be Duplicated") && f.Mod.Contains("("))
                 {
                     f.Mod = f.Mod.Substring(0, f.Mod.IndexOf("("));
                 }
@@ -121,7 +121,7 @@ namespace AltarHelper
         }
         public override void Render()
         {
-            if(GameController.Area.CurrentArea.IsHideout ||
+            if (GameController.Area.CurrentArea.IsHideout ||
                 GameController.Area.CurrentArea.IsTown || GameController.IngameState.IngameUi == null || GameController.IngameState.IngameUi.ItemsOnGroundLabelsVisible == null)
             {
                 return;
@@ -132,7 +132,7 @@ namespace AltarHelper
             {
                 Settings.SwitchMode.Value += 1;
                 if (Settings.SwitchMode.Value == 4) Settings.SwitchMode.Value = 1;
-                switch( Settings.SwitchMode.Value)
+                switch (Settings.SwitchMode.Value)
                 {
                     case 1:
                         DebugWindow.LogMsg("Changed to Any Choice");
@@ -146,8 +146,8 @@ namespace AltarHelper
 
 
                 }
-                    
-                
+
+
             }
 
 
@@ -157,17 +157,17 @@ namespace AltarHelper
 
                 if (label == null || label.Label == null) continue;
                 if (label.ItemOnGround == null || label.ItemOnGround.Metadata == null) continue;
-                
+
 
                 var Altar = label.ItemOnGround?.Metadata;
-                
+
                 if (Altar == null || (!Altar.Contains("TangleAltar") && !Altar.Contains("FireAltar"))) continue;
 
-                
+
                 var upper = label.Label?.GetChildAtIndex(0);
                 var downer = label.Label?.GetChildAtIndex(1);
                 if (upper == null || downer == null) continue;
-               
+
                 string upperText = upper.GetChildAtIndex(1)?.GetText(512).Trim();
                 string downerText = downer.GetChildAtIndex(1)?.GetText(512).Trim();
 
@@ -176,7 +176,7 @@ namespace AltarHelper
                 if (upperText == null || downerText == null) continue;
 
 
-               // continue;
+                // continue;
                 //if (upperText.Contains("Gain Projectiles are fired in random directions") || downerText.Contains("Gain Projectiles are fired in random directions")) DebugWindow.LogError("PROJECTILEESSSSSSSSS");
                 Altar altar = getAltarData(upperText, downerText);
 
@@ -188,14 +188,14 @@ namespace AltarHelper
                 int UpperWeight = 0;
                 int DownerWeight = 0;
 
-                
+
                 if (altar.Upper.BuffWeight == -1 && altar.Downer.BuffWeight == -1) continue;
 
 
 
-                if(Settings.SwitchMode.Value == 2)
+                if (Settings.SwitchMode.Value == 2)
                 {
-                    if(altar.Upper.Choice.Contains("Minion") || altar.Upper.Choice.Contains("Player"))
+                    if (altar.Upper.Choice.Contains("Minion") || altar.Upper.Choice.Contains("Player"))
                     {
                         UpperWeight += altar.Upper.BuffWeight - altar.Upper.DebuffWeight;
                     }
@@ -204,7 +204,7 @@ namespace AltarHelper
                         DownerWeight += altar.Downer.BuffWeight - altar.Downer.DebuffWeight;
                     }
                 }
-                else if( Settings.SwitchMode.Value == 3)
+                else if (Settings.SwitchMode.Value == 3)
                 {
                     if (altar.Upper.Choice.Contains("boss") || altar.Upper.Choice.Contains("Player"))
                     {
@@ -222,17 +222,17 @@ namespace AltarHelper
                     DownerWeight += altar.Downer.BuffWeight - altar.Downer.DebuffWeight;
                 }
 
-               // if(Settings.SwitchMode.Value != 1)
-               // {
-                    if (altar.Upper.Choice.Contains("Minion")) UpperWeight += Settings.MinionWeight.Value;
-                    if (altar.Upper.Choice.Contains("boss")) UpperWeight += Settings.BossWeight.Value;
-                    if (altar.Downer.Choice.Contains("Minion")) DownerWeight += Settings.MinionWeight.Value;
-                    if (altar.Downer.Choice.Contains("boss")) DownerWeight += Settings.BossWeight.Value;
+                // if(Settings.SwitchMode.Value != 1)
+                // {
+                if (altar.Upper.Choice.Contains("Minion")) UpperWeight += Settings.MinionWeight.Value;
+                if (altar.Upper.Choice.Contains("boss")) UpperWeight += Settings.BossWeight.Value;
+                if (altar.Downer.Choice.Contains("Minion")) DownerWeight += Settings.MinionWeight.Value;
+                if (altar.Downer.Choice.Contains("boss")) DownerWeight += Settings.BossWeight.Value;
 
 
                 //}
 
-                
+
                 if (Settings.Debug == true)
                 {
                     DebugWindow.LogError($"AltarUpperBuff {altar.Upper.Buff} | AltarUpperDebuff {altar.Upper.Debuff}");
@@ -246,27 +246,26 @@ namespace AltarHelper
                 }
 
 
-              
-
-                if(UpperWeight >= DownerWeight && UpperWeight > 0)
-                {                   
-                    
-                    Graphics.DrawFrame(upper.GetClientRectCache, getColor(altar.Upper.Choice), Settings.FrameThickness);
-                    continue;
-
-                }
-                else if( DownerWeight > UpperWeight && DownerWeight > 0)
-                {                    
-                    Graphics.DrawFrame(downer.GetClientRectCache, getColor(altar.Downer.Choice), Settings.FrameThickness);
-                    continue;
-
-                }
                 if (UpperWeight < 0 || DownerWeight < 0)
                 {
-                    if(UpperWeight < 0) Graphics.DrawFrame(upper.GetClientRectCache, Settings.BadColor, Settings.FrameThickness);
-                    if(DownerWeight < 0) Graphics.DrawFrame(downer.GetClientRectCache, Settings.BadColor, Settings.FrameThickness);
+                    if (UpperWeight < 0) Graphics.DrawFrame(upper.GetClientRectCache, Settings.BadColor, Settings.FrameThickness);
+                    if (DownerWeight < 0) Graphics.DrawFrame(downer.GetClientRectCache, Settings.BadColor, Settings.FrameThickness);
                     continue;
                 }
+
+                 if (UpperWeight >= 0 || DownerWeight >= 0)
+                { 
+
+                    if (UpperWeight >= DownerWeight && UpperWeight > 0) Graphics.DrawFrame(upper.GetClientRectCache, getColor(altar.Upper.Choice), Settings.FrameThickness);
+                    if (DownerWeight > UpperWeight && DownerWeight > 0) Graphics.DrawFrame(downer.GetClientRectCache, getColor(altar.Downer.Choice), Settings.FrameThickness);
+                        continue;
+                }
+
+
+                
+
+
+
 
 
                 /* if (altar.Upper.BuffWeight > altar.Downer.BuffWeight)
@@ -289,7 +288,7 @@ namespace AltarHelper
 
 
             }
-            
+
             //base.Render();
         }
 
@@ -348,13 +347,13 @@ namespace AltarHelper
             selecterDebuff = selecterDebuff.Contains("chance to be Duplicated") ? selecterDebuff.Substring(0, selecterDebuff.IndexOf("|")) : selecterDebuff.Substring(selecterDebuff.LastIndexOf("|") + 1);
 
             selecterBuff = Regex.Replace(selecterBuff, @"[\d-]", "|");
-            selecterBuff = selecterBuff.Contains("chance to be Duplicated") ? selecterBuff.Substring(0,selecterBuff.IndexOf("|")) : selecterBuff.Substring(selecterBuff.LastIndexOf("|") + 1);
+            selecterBuff = selecterBuff.Contains("chance to be Duplicated") ? selecterBuff.Substring(0, selecterBuff.IndexOf("|")) : selecterBuff.Substring(selecterBuff.LastIndexOf("|") + 1);
 
 
-            if (selecterBuff.Contains("Scarabs")) selecterBuff =  selecterBuff.Replace("Scarabs", "Scarab");
-            
-            if (selecterBuff.Contains("Items")) selecterBuff =  selecterBuff.Replace("Items", "Item");
-            
+            if (selecterBuff.Contains("Scarabs")) selecterBuff = selecterBuff.Replace("Scarabs", "Scarab");
+
+            if (selecterBuff.Contains("Items")) selecterBuff = selecterBuff.Replace("Items", "Item");
+
             if (selecterBuff.Contains("Gems")) selecterBuff = selecterBuff.Replace("Gems", "Gem");
 
 
@@ -388,16 +387,16 @@ namespace AltarHelper
             s.Debuff = selecterDebuff;
             s.Choice = selecterChoice;
             s.BuffWeight = (f1 != null) ? f1.Weight : -1;
-            s.DebuffWeight = (f2 != null) ? f2.Weight: -1;
+            s.DebuffWeight = (f2 != null) ? f2.Weight : -1;
             s.BuffGood = (f1 != null) ? f1.Good : false;
             s.DebuffGood = (f2 != null) ? f2.Good : false;
 
 
 
-            
-            
 
-            return  s;
+
+
+            return s;
         }
 
 
