@@ -246,25 +246,19 @@ namespace AltarHelper
                 }
 
 
-              
 
-                if(UpperWeight >= DownerWeight && UpperWeight > 0)
-                {                   
-                    
-                    Graphics.DrawFrame(upper.GetClientRectCache, getColor(altar.Upper.Choice), Settings.FrameThickness);
-                    continue;
 
-                }
-                else if( DownerWeight > UpperWeight && DownerWeight > 0)
-                {                    
-                    Graphics.DrawFrame(downer.GetClientRectCache, getColor(altar.Downer.Choice), Settings.FrameThickness);
-                    continue;
-
-                }
                 if (UpperWeight < 0 || DownerWeight < 0)
                 {
-                    if(UpperWeight < 0) Graphics.DrawFrame(upper.GetClientRectCache, Settings.BadColor, Settings.FrameThickness);
-                    if(DownerWeight < 0) Graphics.DrawFrame(downer.GetClientRectCache, Settings.BadColor, Settings.FrameThickness);
+                    if (UpperWeight < 0) Graphics.DrawFrame(upper.GetClientRectCache, Settings.BadColor, Settings.FrameThickness);
+                    if (DownerWeight < 0) Graphics.DrawFrame(downer.GetClientRectCache, Settings.BadColor, Settings.FrameThickness);
+                    continue;
+                }
+                if (UpperWeight >= 0 || DownerWeight >= 0)
+                {
+
+                    if (UpperWeight >= DownerWeight && UpperWeight > 0) Graphics.DrawFrame(upper.GetClientRectCache, getColor(altar.Upper.Choice), Settings.FrameThickness);
+                    if (DownerWeight > UpperWeight && DownerWeight > 0) Graphics.DrawFrame(downer.GetClientRectCache, getColor(altar.Downer.Choice), Settings.FrameThickness);
                     continue;
                 }
 
