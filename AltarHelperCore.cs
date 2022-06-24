@@ -171,8 +171,8 @@ namespace AltarHelper
                 string upperText = upper.GetChildAtIndex(1)?.GetText(512).Trim();
                 string downerText = downer.GetChildAtIndex(1)?.GetText(512).Trim();
 
-                if (Settings.Debug == true) DebugWindow.LogError($"AltarDowner Lenght 512: {downer.GetChildAtIndex(1)?.GetText(512).Trim()}");
-                if (Settings.Debug == true) DebugWindow.LogError($"AltarUpper Lenght 512: {upper.GetChildAtIndex(1)?.GetText(512).Trim()}");
+                if (Settings.Debug == true) DebugWindow.LogError($"AltarDowner Lenght 512 : {downerText}");
+                if (Settings.Debug == true) DebugWindow.LogError($"AltarUpper Lenght 512 : {upperText}");
                 if (upperText == null || downerText == null) continue;
 
 
@@ -247,7 +247,6 @@ namespace AltarHelper
 
 
 
-
                 if (UpperWeight < 0 || DownerWeight < 0)
                 {
                     if (UpperWeight < 0) Graphics.DrawFrame(upper.GetClientRectCache, Settings.BadColor, Settings.FrameThickness);
@@ -263,28 +262,9 @@ namespace AltarHelper
                 }
 
 
-                /* if (altar.Upper.BuffWeight > altar.Downer.BuffWeight)
-                 {
-                     SharpDX.Color color = altar.Upper.Choice.Contains("Minions") ? Settings.MinionColor : Settings.BossColor;                   
-                    // if (Settings.SwitchMode.Value == 2 && (altar.Upper.Choice.Contains("boss")) || Settings.SwitchMode.Value == 3 && (altar.Upper.Choice.Contains("Minions"))) continue;
-                     if (altar.Upper.BuffGood) Graphics.DrawFrame(upper.GetClientRectCache, color, Settings.FrameThickness);
-                     if(altar.Upper.DebuffWeight - altar.Upper.BuffWeight > 0) Graphics.DrawFrame(upper.GetClientRectCache, Settings.BadColor, Settings.FrameThickness);
-                 }
-                 else
-                 {
-                     SharpDX.Color color = altar.Downer.Choice.Contains("Minions") ? Settings.MinionColor : Settings.BossColor;
-                  //   if (Settings.SwitchMode.Value == 2 && (!altar.Downer.Choice.Contains("Minions") || !altar.Downer.Choice.Contains("Player")) || (Settings.SwitchMode.Value == 3 && altar.Downer.Choice.Contains("Minions"))) continue;
-                     if (altar.Downer.BuffGood) Graphics.DrawFrame(downer.GetClientRectCache, color, Settings.FrameThickness);
-                     if(altar.Downer.DebuffWeight - altar.Downer.BuffWeight > 0) Graphics.DrawFrame(downer.GetClientRectCache, Settings.BadColor, Settings.FrameThickness);
-                 }*/
-
-
-
-
-
             }
             
-            //base.Render();
+         
         }
 
         public override Job Tick()
@@ -325,31 +305,62 @@ namespace AltarHelper
         public Select getSelectData(string selecterText)
         {
 
-            int start = selecterText.IndexOf("{") + 1;
-            int len = selecterText.IndexOf("}") - start;
-            string selecterChoice = selecterText.Substring(start, len);
+            //Spliting the Object Text
+            string selecterChoice = Regex.Matches(selecterText, @"(?<={)(\n?.*)(?=})")[0].ToString();
 
-            start = selecterText.IndexOf("}") + 1;
-            len = selecterText.LastIndexOf("<") - start;
+            if (Settings.DebugDepper == true) DebugWindow.LogError($"Choice: {selecterChoice}");
+
+            int start = selecterText.IndexOf("}") + 1;
+            int len = selecterText.LastIndexOf("<") - start;          
             string selecterDebuff = selecterText.Substring(start, len).Trim();
 
-            start = selecterText.LastIndexOf("{") + 1;
-            len = selecterText.LastIndexOf("}") - start;
-            string selecterBuff = selecterText.Substring(start, len).Trim();
+            if (Settings.DebugDepper == true) DebugWindow.LogError($"SelecterDebuff: {selecterDebuff}");
+
+            //End Spliting
 
 
-            selecterDebuff = Regex.Replace(selecterDebuff, @"[\d-]", "|");
-            selecterDebuff = selecterDebuff.Contains("chance to be Duplicated") ? selecterDebuff.Substring(0, selecterDebuff.IndexOf("|")) : selecterDebuff.Substring(selecterDebuff.LastIndexOf("|") + 1);
+            //sorting out the debuffs
+            List<string> debuffs = new List<string>();
+
+            debuffs.Clear();
+
+
+            if (selecterDebuff.Split('\n').Count() > 0)
+            {
+                foreach (string d in selecterDebuff.Split('\n'))
+                {
+                    string debugProcessed = Regex.Replace(d, @"[\d-]", "|");
+                    debugProcessed = debugProcessed.Contains("chance to be Duplicated") ? d.Substring(0, d.IndexOf("|")) : d.Substring(d.LastIndexOf("|") + 1);
+
+                    debuffs.Add(debugProcessed);
+                    if (Settings.DebugDepper) DebugWindow.LogMsg(debugProcessed);
+
+                }
+            }
+            else
+            {
+                debuffs.Add(selecterDebuff);
+            }
+
+            //sorting out End
+
+
+
+
+            //sorting out Buffs Strings
+            string selecterBuff = Regex.Matches(selecterText, @"(?<=<enchanted>{)([^.]+.*?)(?=})")[0].ToString();            
+            
+            if (Settings.DebugDepper == true) DebugWindow.LogError($"SelecterBuffs: {selecterBuff}");
 
             selecterBuff = Regex.Replace(selecterBuff, @"[\d-]", "|");
             selecterBuff = selecterBuff.Contains("chance to be Duplicated") ? selecterBuff.Substring(0,selecterBuff.IndexOf("|")) : selecterBuff.Substring(selecterBuff.LastIndexOf("|") + 1);
 
-
-            if (selecterBuff.Contains("Scarabs")) selecterBuff =  selecterBuff.Replace("Scarabs", "Scarab");
-            
-            if (selecterBuff.Contains("Items")) selecterBuff =  selecterBuff.Replace("Items", "Item");
-            
+            if (selecterBuff.Contains("Scarabs")) selecterBuff =  selecterBuff.Replace("Scarabs", "Scarab");            
+            if (selecterBuff.Contains("Items")) selecterBuff =  selecterBuff.Replace("Items", "Item");            
             if (selecterBuff.Contains("Gems")) selecterBuff = selecterBuff.Replace("Gems", "Gem");
+            
+            //sorting out End Buffs
+
 
 
             if (Settings.Debug == true)
@@ -359,37 +370,39 @@ namespace AltarHelper
 
 
 
+            //Checking Buff on Filter List
             Filter f1 = FilterList.FirstOrDefault(x => x.Mod == (selecterBuff));
-            Filter f2 = FilterList.FirstOrDefault(x => x.Mod == (selecterDebuff));
 
 
-            if (f1 == null && !selecterBuff.Contains("chance to be Duplicated")) f1 = FilterList.FirstOrDefault(x => x.Mod.Contains(selecterBuff));
-            if (f2 == null && !selecterDebuff.Contains("chance to be Duplicated")) f2 = FilterList.FirstOrDefault(x => x.Mod.Contains(selecterDebuff));
+
+            // Checking debuffs on Filter List
+            List<Filter> f2List = new List<Filter>();
+
+            foreach(string y in debuffs)
+            {
+                Filter f = FilterList.FirstOrDefault(x => x.Mod.Contains(y));
+                if(f != null)
+                {
+                    f2List.Add(f);
+                    if (Settings.DebugDepper) DebugWindow.LogMsg($"Mod: {f.Mod}  | Weight {f.Weight}");
+                }
+                
+            }           
+            //End Check of debuffs
 
 
-            //   Filter f1 = FilterList.FirstOrDefault(x => x.Mod.Contains(selecterBuff));
-            // Filter f2 = FilterList.FirstOrDefault(x => x.Mod.Contains(selecterDebuff));
 
-            //DebugWindow.LogError(selecterDebuff);
-            //foreach(Filter f in FilterList)
-            //{
-            //    DebugWindow.LogError(f.Mod);
-            //    if (f.Mod.Contains(selecterDebuff.Trim())) DebugWindow.LogError("ENTROU");
-            //}
 
             Select s = new Select();
             s.Buff = selecterBuff;
             s.Debuff = selecterDebuff;
             s.Choice = selecterChoice;
             s.BuffWeight = (f1 != null) ? f1.Weight : -1;
-            s.DebuffWeight = (f2 != null) ? f2.Weight: -1;
+            s.DebuffWeight = f2List.Sum(x=> x.Weight);
             s.BuffGood = (f1 != null) ? f1.Good : false;
-            s.DebuffGood = (f2 != null) ? f2.Good : false;
+            s.DebuffGood = (f2List.FirstOrDefault(x=> x.Good == false) != null)? true : false;
 
 
-
-            
-            
 
             return  s;
         }
