@@ -354,8 +354,7 @@ namespace AltarHelper
             {
                 foreach (string d in selecterBuff.Split('\n'))
                 {
-                    string debugProcessed = Regex.Replace(d, @"[\d-]", "|");
-                    debugProcessed = debugProcessed.Contains("chance to be Duplicated") ? d.Substring(0, d.IndexOf("|")) : d.Substring(d.LastIndexOf("|") + 1);
+                    string debugProcessed = Regex.Replace(d, @"[\d-]", "|");                    
 
                     buffs.Add(debugProcessed);
                     if (Settings.Debug) DebugWindow.LogMsg(debugProcessed);
