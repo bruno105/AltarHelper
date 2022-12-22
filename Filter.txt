@@ -69,7 +69,7 @@ Drops (1–2) additional Item with a Searing Exarch Implicit Modifier|15|Boss
 
 //Quantity
 (15–35)% increased Rarity of Items found in this Area|35|Player
-(15-35)% increased Quantity of Items found in this Area|35Player
+(15-35)% increased Quantity of Items found in this Area|35|Player
 Maps dropped by slain Enemies have (10–15)% chance to be Duplicated|40|Player
 Basic Currency Items dropped by slain Enemies have (15–30)% chance to be Duplicated|100|Player
 Maps dropped by slain Enemies have (15–30)% chance to be Duplicated|100|Player
