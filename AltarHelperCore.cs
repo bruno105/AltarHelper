@@ -307,11 +307,11 @@ namespace AltarHelper
 
             if (Settings.Debug == true) DebugWindow.LogError($"Choice: {selecterChoice}");
 
-            int start = selecterText.IndexOf("}") + 1;
-            int len = selecterText.LastIndexOf("<") - start;
+            int start = selecterText.IndexOf(":}") + 2;
+            int len = selecterText.IndexOf("<enchanted") - start;
             string selecterDebuff = selecterText.Substring(start, len).Trim();
 
-            if (Settings.Debug == true) DebugWindow.LogError($"SelecterDebuff: {selecterDebuff}");
+            if (Settings.Debug == true) DebugWindow.LogMsg($"SelecterDebuff: {selecterDebuff}");
 
             //End Spliting
 
@@ -329,7 +329,7 @@ namespace AltarHelper
                 foreach (string d in selecterDebuff.Split('\n'))
                 {
                     string debugProcessed = Regex.Replace(d, @"[\d-]", "|");
-                    debugProcessed = debugProcessed.Contains("chance to be Duplicated") ? d.Substring(0, d.IndexOf("|")) : d.Substring(d.LastIndexOf("|") + 1);
+                 //   debugProcessed = debugProcessed.Contains("chance to be Duplicated") ? d.Substring(0, d.IndexOf("|")) : d.Substring(d.LastIndexOf("|") + 1);
 
                     debuffs.Add(debugProcessed);
                    // if (Settings.Debug) DebugWindow.LogMsg(debugProcessed);
