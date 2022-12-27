@@ -18,6 +18,7 @@ P.S Also u can use Thanos#6505 Sheet to make your filter
 * Rewrote the whole concept of reading mods and regex
  - Now u can use filter strings like:
     "(1.6–3.2)% chance to drop an additional Divine Orb|200000|Minion"  Or
+    
     "#% chance to drop an additional Divine Orb|200000|Minion"
 
 * Added a new section for Debugs
