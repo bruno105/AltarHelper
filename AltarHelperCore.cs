@@ -7,6 +7,8 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using SharpDX;
+using ExileCore.Shared.SomeMagic;
 
 namespace AltarHelper
 {
@@ -21,6 +23,7 @@ namespace AltarHelper
             Name = "AltarHelper";
             Settings.AltarSettings.RefreshFile.OnPressed += () => { ReadFilterFile(); };
             ReadFilterFile();
+    
             return base.Initialise();
         }
         private void ReadFilterFile()
@@ -28,6 +31,7 @@ namespace AltarHelper
             var path = $"{DirectoryFullName}\\{FILTER_FILE}";
             if (File.Exists(path))
             {
+              
                 ReadFile();
             }
             else
@@ -51,11 +55,17 @@ namespace AltarHelper
         }
 
 
+
         private void ReadFile()
         {
             FilterList.Clear();
+            
             string[] lines = System.IO.File.ReadAllLines($"{DirectoryFullName}\\{FILTER_FILE}");
             bool good = false;
+            List<string> localList = new List<string>();
+            localList.Clear();
+            Settings.FilterList.ListFilter.SetListValues(localList);
+
             foreach (string line in lines)
             {
                 if (line.Length < 4) continue;
@@ -77,7 +87,7 @@ namespace AltarHelper
                 Filter f = new Filter();
 
                 f.Mod = splitedLine[0].Length > 0 ? splitedLine[0] : "-1";
-                f.Weight = splitedLine[1].Length > 0 ? Int32.Parse(splitedLine[1]) : -1;
+                f.Weight = splitedLine[1].Length > 0 ? Int32.Parse(splitedLine[1]) : 0;
 
                 if (splitedLine.Length == 2)
                 {
@@ -90,29 +100,17 @@ namespace AltarHelper
 
                 f.Good = good;
 
-                if (f.Mod == "-1" || f.Weight == -1) continue;
+                if (f.Mod == "-1") continue;
 
-                if (f.Mod.Contains(")") && !f.Mod.Contains("chance to be Duplicated"))
-                {
-                    f.Mod = f.Mod.Substring(f.Mod.IndexOf(")") + 1);
-                }
-                else if (f.Mod.Contains("chance to be Duplicated") && f.Mod.Contains("("))
-                {
-                    f.Mod = f.Mod.Substring(0, f.Mod.IndexOf("("));
-                }
-
-                if (f.Mod.Contains("Scarabs")) f.Mod = f.Mod.Replace("Scarabs", "Scarab");
-                if (f.Mod.Contains("Items")) f.Mod = f.Mod.Replace("Items", "Item");
-                if (f.Mod.Contains("Gems")) f.Mod = f.Mod.Replace("Gems", "Gem");
-
-                // f.Mod = f.Mod.Trim();
+                f.Mod = splitedLine[0].Contains("(") && splitedLine[0].Contains(")") ? Regex.Replace(splitedLine[0], @"\([^()]*\)", "#"): Regex.Replace(splitedLine[0], @"(\d+)(?:.\d)|\d+", "#");
+              
 
                 FilterList.Add(f);
-
+                localList.Add(string.Format($"{f.Mod} | {f.Weight} |  Good? {f.Good}"));
 
             }
 
-
+            Settings.FilterList.ListFilter.SetListValues(localList);
             FilterList.OrderBy(x => x.Weight);
 
         }
@@ -165,11 +163,11 @@ namespace AltarHelper
                 var downer = label.Label?.GetChildAtIndex(1);
                 if (upper == null || downer == null) continue;
 
-                string upperText = upper.GetChildAtIndex(1)?.GetText(512).Trim();
-                string downerText = downer.GetChildAtIndex(1)?.GetText(512).Trim();
+                string? upperText = upper.GetChildAtIndex(1)?.GetText(512).Trim();
+                string? downerText = downer.GetChildAtIndex(1)?.GetText(512).Trim();
 
-                if (Settings.Debug == true) DebugWindow.LogError($"AltarDowner Lenght 512 : {downerText}");
-                if (Settings.Debug == true) DebugWindow.LogError($"AltarUpper Lenght 512 : {upperText}");
+                if (Settings.DebugSettings.DebugDrawners == true) DebugWindow.LogError($"AltarDowner Lenght 512 : {downerText}");
+                if (Settings.DebugSettings.DebugDrawners == true) DebugWindow.LogError($"AltarUpper Lenght 512 : {upperText}");
                 if (upperText == null || downerText == null) continue;
 
 
@@ -181,12 +179,12 @@ namespace AltarHelper
 
 
                 if (altar == null) continue;
-                int drawIndex = 0;
+                
                 int UpperWeight = 0;
                 int DownerWeight = 0;
 
 
-                if (altar.Upper.BuffWeight == -1 && altar.Downer.BuffWeight == -1) continue;
+                if (altar.Upper.BuffWeight == 0 && altar.Downer.BuffWeight == 0 && altar.Downer.DebuffWeight == 0 && altar.Upper.DebuffWeight == 0 ) continue;
 
 
 
@@ -219,28 +217,21 @@ namespace AltarHelper
                     DownerWeight += altar.Downer.BuffWeight - altar.Downer.DebuffWeight;
                 }
 
-                // if(Settings.SwitchMode.Value != 1)
-                // {
+            
                 if (altar.Upper.Choice.Contains("Minion")) UpperWeight += Settings.AltarSettings.MinionWeight.Value;
                 if (altar.Upper.Choice.Contains("boss")) UpperWeight += Settings.AltarSettings.BossWeight.Value;
                 if (altar.Downer.Choice.Contains("Minion")) DownerWeight += Settings.AltarSettings.MinionWeight.Value;
                 if (altar.Downer.Choice.Contains("boss")) DownerWeight += Settings.AltarSettings.BossWeight.Value;
 
 
-                //}
 
-
-                if (Settings.Debug == true)
+                if (Settings.DebugSettings.DebugWeight == true)
                 {
-                    DebugWindow.LogError($"AltarUpperBuff {altar.Upper.Buff} | AltarUpperDebuff {altar.Upper.Debuff}");
-                    DebugWindow.LogError($"AltarUpperBuffWheight {altar.Upper.BuffWeight} | AltarUpperDebuffWeight {altar.Upper.DebuffWeight} | AltarChoice: {altar.Upper.Choice}");
-
-                    DebugWindow.LogError($"AltarDownerBuff {altar.Downer.Buff} | AltarDownerDebuff {altar.Upper.Debuff}");
-                    DebugWindow.LogError($"AltarDownerBuffWheight {altar.Downer.BuffWeight} | AltarDownerDebuffWeight {altar.Downer.DebuffWeight}| AltarChoice: {altar.Downer.Choice}");
-
-                    DebugWindow.LogError($"SwitchMode: {Settings.AltarSettings.SwitchMode.Value}");
-                    DebugWindow.LogError($"UpperWeight: {UpperWeight} | DownerWeight: {DownerWeight}");
+                    Graphics.DrawText(UpperWeight.ToString(), new System.Numerics.Vector2(upper.GetClientRectCache.Center.X-10, upper.GetClientRectCache.Top-25),Color.Cyan);
+                    Graphics.DrawText(DownerWeight.ToString(), new System.Numerics.Vector2(downer.GetClientRectCache.Center.X-10, downer.GetClientRectCache.Bottom+15),Color.Cyan);
+                  //  DebugWindow.LogError($"UpperWeight: {UpperWeight} | DownerWeight: {DownerWeight}");
                 }
+
 
 
 
@@ -250,6 +241,8 @@ namespace AltarHelper
                     if (DownerWeight < 0) Graphics.DrawFrame(downer.GetClientRectCache, Settings.AltarSettings.BadColor, Settings.AltarSettings.FrameThickness);
                     //continue;
                 }
+
+
 
                 if (UpperWeight >= 0 || DownerWeight >= 0)
                 {                    
@@ -305,13 +298,11 @@ namespace AltarHelper
             //Spliting the Object Text
             string selecterChoice = Regex.Matches(selecterText, @"(?<={)(\n?.*)(?=})")[0].ToString();
 
-            if (Settings.Debug == true) DebugWindow.LogError($"Choice: {selecterChoice}");
 
             int start = selecterText.IndexOf(":}") + 2;
             int len = selecterText.IndexOf("<enchanted") - start;
             string selecterDebuff = selecterText.Substring(start, len).Trim();
 
-            if (Settings.Debug == true) DebugWindow.LogMsg($"SelecterDebuff: {selecterDebuff}");
 
             //End Spliting
 
@@ -328,11 +319,10 @@ namespace AltarHelper
             {
                 foreach (string d in selecterDebuff.Split('\n'))
                 {
-                    string debugProcessed = Regex.Replace(d, @"[\d-]", "|");
-                 //   debugProcessed = debugProcessed.Contains("chance to be Duplicated") ? d.Substring(0, d.IndexOf("|")) : d.Substring(d.LastIndexOf("|") + 1);
+
+                    string debugProcessed = Regex.Replace(d, @"((\d+)(?:.\d)|\d+)", "#").Replace("}","").Replace("{", ""); ;
 
                     debuffs.Add(debugProcessed);
-                   // if (Settings.Debug) DebugWindow.LogMsg(debugProcessed);
 
                 }
             }
@@ -354,37 +344,16 @@ namespace AltarHelper
             {
                 foreach (string d in selecterBuff.Split('\n'))
                 {
-                    string debugProcessed = Regex.Replace(d, @"[\d-]", "|");                    
+                    string debugProcessed = Regex.Replace(d, @"((\d+)(?:.\d)|\d+)", "#").Replace("}", "").Replace("{", "");                    
 
                     buffs.Add(debugProcessed);
-                    if (Settings.Debug) DebugWindow.LogMsg(debugProcessed);
+                    
 
                 }
             }
             else
             {
-                buffs.Add(selecterDebuff);
-            }
-
-
-
-
-            if (Settings.Debug == true) DebugWindow.LogError($"SelecterBuffs: {selecterBuff}");
-
-         /*   selecterBuff = Regex.Replace(selecterBuff, @"[\d-]", "|");
-            selecterBuff = selecterBuff.Contains("chance to be Duplicated") ? selecterBuff.Substring(0, selecterBuff.IndexOf("|")) : selecterBuff.Substring(selecterBuff.LastIndexOf("|") + 1);
-
-            if (selecterBuff.Contains("Scarabs")) selecterBuff = selecterBuff.Replace("Scarabs", "Scarab");
-            if (selecterBuff.Contains("Items")) selecterBuff = selecterBuff.Replace("Items", "Item");
-            if (selecterBuff.Contains("Gems")) selecterBuff = selecterBuff.Replace("Gems", "Gem");*/
-
-            //sorting out End Buffs
-
-
-
-            if (Settings.Debug == true)
-            {
-                DebugWindow.LogError($"SearchBuffer {selecterBuff} | SearchDebuff {selecterDebuff}");
+                buffs.Add(selecterBuff);
             }
 
 
@@ -397,11 +366,12 @@ namespace AltarHelper
 
             foreach (string y in debuffs)
             {
+                if (Settings.DebugSettings.DebugDebuffs) DebugWindow.LogError(y);
                 Filter f = FilterList.FirstOrDefault(x => x.Mod.Contains(y));
                 if (f != null)
                 {
                     f2List.Add(f);
-                    if (Settings.Debug) DebugWindow.LogMsg($"Bad Mod: {f.Mod}  | Weight {f.Weight}");
+                    if (Settings.DebugSettings.DebugDebuffs) DebugWindow.LogMsg($"Bad Mod: {f.Mod}  | Weight {f.Weight}");
                 }
 
             }
@@ -409,18 +379,14 @@ namespace AltarHelper
             foreach (string y in buffs)
             {
                 string buff = y;
-                buff = Regex.Replace(buff, @"[\d-]", "|");
-                buff = selecterBuff.Contains("chance to be Duplicated") ? buff.Substring(0, buff.IndexOf("|")) : buff.Substring(buff.LastIndexOf("|") + 1);
+                buff = Regex.Replace(buff, @"((\d+)(?:.\d)|\d+)", "#");
 
-                if (buff.Contains("Scarabs")) buff = buff.Replace("Scarabs", "Scarab");
-                if (buff.Contains("Items")) buff = buff.Replace("Items", "Item");
-                if (buff.Contains("Gems")) buff = buff.Replace("Gems", "Gem");
-
+                if (Settings.DebugSettings.DebugBuffs) DebugWindow.LogError(y);
                 Filter f = FilterList.FirstOrDefault(x => x.Mod.Contains(buff));
                 if (f != null)
                 {
                     f1List.Add(f);
-                    if (Settings.Debug) DebugWindow.LogMsg($"Good Mod: {f.Mod}  | Weight {f.Weight}");
+                    if (Settings.DebugSettings.DebugBuffs) DebugWindow.LogMsg($"Good Mod: {f.Mod}  | Weight {f.Weight}");
                 }
 
             }
@@ -433,7 +399,7 @@ namespace AltarHelper
             s.Buff = selecterBuff;
             s.Debuff = selecterDebuff;
             s.Choice = selecterChoice;
-            s.BuffWeight = (f1List.Count > 0) ? f1List.Sum(x => x.Weight) : -1;
+            s.BuffWeight = (f1List.Count > 0) ? f1List.Sum(x => x.Weight) : 0;
             s.DebuffWeight = f2List.Sum(x => x.Weight);
             s.BuffGood = (f1List.FirstOrDefault(x => x.Good == false) != null) ? true : false;
             s.DebuffGood = (f2List.FirstOrDefault(x => x.Good == false) != null) ? true : false;
