@@ -4,7 +4,7 @@ using ExileCore.Shared.Nodes;
 using System.Windows.Forms;
 namespace AltarHelper
 {
-    
+
     public class Settings : ISettings
     {
 
@@ -15,7 +15,7 @@ namespace AltarHelper
 
     }
     [Submenu]
-    public class AltarSettings 
+    public class AltarSettings
     {
 
         public ButtonNode RefreshFile { get; set; } = new ButtonNode();
@@ -37,7 +37,7 @@ namespace AltarHelper
     {
 
         public ListNode ListFilter { get; set; } = new ListNode();
-    
+
     }
 
     [Submenu]

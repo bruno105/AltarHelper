@@ -8,10 +8,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using SharpDX;
-using ExileCore.Shared.SomeMagic;
+using System.Runtime.Versioning;
 
 namespace AltarHelper
 {
+    [SupportedOSPlatform("windows")]
     public class AltarHelperCore : BaseSettingsPlugin<Settings>
     {
         private const string FILTER_FILE = "Filter.txt";
@@ -23,7 +24,7 @@ namespace AltarHelper
             Name = "AltarHelper";
             Settings.AltarSettings.RefreshFile.OnPressed += () => { ReadFilterFile(); };
             ReadFilterFile();
-    
+
             return base.Initialise();
         }
         private void ReadFilterFile()
@@ -31,7 +32,7 @@ namespace AltarHelper
             var path = $"{DirectoryFullName}\\{FILTER_FILE}";
             if (File.Exists(path))
             {
-              
+
                 ReadFile();
             }
             else
@@ -59,7 +60,7 @@ namespace AltarHelper
         private void ReadFile()
         {
             FilterList.Clear();
-            
+
             string[] lines = System.IO.File.ReadAllLines($"{DirectoryFullName}\\{FILTER_FILE}");
             bool good = false;
             List<string> localList = new List<string>();
@@ -102,8 +103,8 @@ namespace AltarHelper
 
                 if (f.Mod == "-1") continue;
 
-                f.Mod = splitedLine[0].Contains("(") && splitedLine[0].Contains(")") ? Regex.Replace(splitedLine[0], @"\([^()]*\)", "#"): Regex.Replace(splitedLine[0], @"(\d+)(?:.\d)|\d+", "#");
-              
+                f.Mod = splitedLine[0].Contains("(") && splitedLine[0].Contains(")") ? Regex.Replace(splitedLine[0], @"\([^()]*\)", "#") : Regex.Replace(splitedLine[0], @"(\d+)(?:.\d)|\d+", "#");
+
 
                 FilterList.Add(f);
                 localList.Add(string.Format($"{f.Mod} | {f.Weight} |  Good? {f.Good}"));
@@ -179,12 +180,12 @@ namespace AltarHelper
 
 
                 if (altar == null) continue;
-                
+
                 int UpperWeight = 0;
                 int DownerWeight = 0;
 
 
-                if (altar.Upper.BuffWeight == 0 && altar.Downer.BuffWeight == 0 && altar.Downer.DebuffWeight == 0 && altar.Upper.DebuffWeight == 0 ) continue;
+                if (altar.Upper.BuffWeight == 0 && altar.Downer.BuffWeight == 0 && altar.Downer.DebuffWeight == 0 && altar.Upper.DebuffWeight == 0) continue;
 
 
 
@@ -217,7 +218,7 @@ namespace AltarHelper
                     DownerWeight += altar.Downer.BuffWeight - altar.Downer.DebuffWeight;
                 }
 
-            
+
                 if (altar.Upper.Choice.Contains("Minion")) UpperWeight += Settings.AltarSettings.MinionWeight.Value;
                 if (altar.Upper.Choice.Contains("boss")) UpperWeight += Settings.AltarSettings.BossWeight.Value;
                 if (altar.Downer.Choice.Contains("Minion")) DownerWeight += Settings.AltarSettings.MinionWeight.Value;
@@ -227,9 +228,9 @@ namespace AltarHelper
 
                 if (Settings.DebugSettings.DebugWeight == true)
                 {
-                    Graphics.DrawText(UpperWeight.ToString(), new System.Numerics.Vector2(upper.GetClientRectCache.Center.X-10, upper.GetClientRectCache.Top-25),Color.Cyan);
-                    Graphics.DrawText(DownerWeight.ToString(), new System.Numerics.Vector2(downer.GetClientRectCache.Center.X-10, downer.GetClientRectCache.Bottom+15),Color.Cyan);
-                  //  DebugWindow.LogError($"UpperWeight: {UpperWeight} | DownerWeight: {DownerWeight}");
+                    Graphics.DrawText(UpperWeight.ToString(), new System.Numerics.Vector2(upper.GetClientRectCache.Center.X - 10, upper.GetClientRectCache.Top - 25), Color.Cyan);
+                    Graphics.DrawText(DownerWeight.ToString(), new System.Numerics.Vector2(downer.GetClientRectCache.Center.X - 10, downer.GetClientRectCache.Bottom + 15), Color.Cyan);
+                    //  DebugWindow.LogError($"UpperWeight: {UpperWeight} | DownerWeight: {DownerWeight}");
                 }
 
 
@@ -245,7 +246,7 @@ namespace AltarHelper
 
 
                 if (UpperWeight >= 0 || DownerWeight >= 0)
-                {                    
+                {
                     if (UpperWeight >= DownerWeight && UpperWeight > 0) Graphics.DrawFrame(upper.GetClientRectCache, getColor(altar.Upper.Choice), Settings.AltarSettings.FrameThickness);
                     if (DownerWeight > UpperWeight && DownerWeight > 0) Graphics.DrawFrame(downer.GetClientRectCache, getColor(altar.Downer.Choice), Settings.AltarSettings.FrameThickness);
                     continue;
@@ -320,7 +321,7 @@ namespace AltarHelper
                 foreach (string d in selecterDebuff.Split('\n'))
                 {
 
-                    string debugProcessed = Regex.Replace(d, @"((\d+)(?:.\d)|\d+)", "#").Replace("}","").Replace("{", ""); ;
+                    string debugProcessed = Regex.Replace(d, @"((\d+)(?:.\d)|\d+)", "#").Replace("}", "").Replace("{", "");
 
                     debuffs.Add(debugProcessed);
 
@@ -344,10 +345,10 @@ namespace AltarHelper
             {
                 foreach (string d in selecterBuff.Split('\n'))
                 {
-                    string debugProcessed = Regex.Replace(d, @"((\d+)(?:.\d)|\d+)", "#").Replace("}", "").Replace("{", "");                    
+                    string debugProcessed = Regex.Replace(d, @"((\d+)(?:.\d)|\d+)", "#").Replace("}", "").Replace("{", "");
 
                     buffs.Add(debugProcessed);
-                    
+
 
                 }
             }
