@@ -338,24 +338,33 @@ namespace AltarHelper
 
 
             //sorting out Buffs Strings
-            string selecterBuff = Regex.Matches(selecterText, @"(?<=<enchanted>{)([^.]+.*?)(?=})")[0].ToString();
+            MatchCollection selecterBuffes = Regex.Matches(selecterText, @"<enchanted>\{([^\}]+)\}");//<enchanted>\{([^\}]+)\}
+            //(?<=<enchanted>{)([^.]+.*?)(?=})
 
 
-            if (selecterBuff.Split('\n').Count() > 0)
+
+
+            string selecterBuff = "";
+            foreach (Match b in selecterBuffes)
             {
-                foreach (string d in selecterBuff.Split('\n'))
+                selecterBuff += b.Value;
+                if (b.Value.Split('\n').Count() > 0)
                 {
-                    string debugProcessed = Regex.Replace(d, @"((\d+)(?:.\d)|\d+)", "#").Replace("}", "").Replace("{", "");
+                    foreach (string d in b.Value.Split('\n'))
+                    {
+                        string debugProcessed = Regex.Replace(d, @"((\d+)(?:.\d)|\d+)", "#").Replace("}", "").Replace("{", "").Replace("<enchanted>","");
 
-                    buffs.Add(debugProcessed);
+                        buffs.Add(debugProcessed);
 
 
+                    }
+                }
+                else
+                {
+                    buffs.Add(b.Value);
                 }
             }
-            else
-            {
-                buffs.Add(selecterBuff);
-            }
+            
 
 
 

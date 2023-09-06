@@ -10,6 +10,8 @@
 	  <PathMap>$(MSBuildProjectDirectory)=$(MSBuildProjectName)</PathMap>
 	  <EmbedAllSources>true</EmbedAllSources>
 	  <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+	  <OutputPath>C:\Users\bruno\OneDrive\Área de Trabalho\Exile\PoEHelper\Plugins\Temp\AltarHelper</OutputPath>
+	  <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
