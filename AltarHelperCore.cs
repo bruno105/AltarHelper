@@ -1,29 +1,36 @@
 ﻿using ExileCore;
-using ExileCore.PoEMemory.Components;
+using ExileCore.PoEMemory.Elements;
+using ExileCore.Shared.Cache;
+using SharpDX;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.IO;
-using System.Text;
-using System.Threading.Tasks;
+using System.Linq;
 using System.Text.RegularExpressions;
-using SharpDX;
 
 namespace AltarHelper
 {
     public class AltarHelperCore : BaseSettingsPlugin<Settings>
     {
         private const string FILTER_FILE = "Filter.txt";
-        public List<Filter> FilterList = new List<Filter>();
-        public List<Tuple<RectangleF, Color, int>> drawingList = new List<Tuple<RectangleF, Color, int>>();
+        public List<FilterEntry> FilterList = new();
+        public List<Tuple<RectangleF, Color, int>> RectangleDrawingList = new();
+        public List<Tuple<string, Vector2, Color>> TextDrawingList = new();
+        private FrameCache<List<LabelOnGround>> LabelCache { get; set; }
 
         public override bool Initialise()
         {
             Name = "AltarHelper";
-            Settings.RefreshFile.OnPressed += () => { ReadFilterFile(); };
+            Settings.AltarSettings.RefreshFile.OnPressed += ReadFilterFile;
             ReadFilterFile();
+            LabelCache = new FrameCache<List<LabelOnGround>>(UpdateAltarLabelList);
             return true;
         }
+        private List<LabelOnGround> UpdateAltarLabelList() => GameController.IngameState.IngameUi.ItemsOnGroundLabelsVisible.Count == 0 ? new List<LabelOnGround>() :
+            GameController.IngameState.IngameUi.ItemsOnGroundLabelsVisible.
+                Where(x =>
+                    x.ItemOnGround.Metadata == "Metadata/MiscellaneousObjects/PrimordialBosses/TangleAltar" ||
+                    x.ItemOnGround.Metadata == "Metadata/MiscellaneousObjects/PrimordialBosses/CleansingFireAltar").ToList();
         private void ReadFilterFile()
         {
             var path = $"{DirectoryFullName}\\{FILTER_FILE}";
@@ -54,291 +61,305 @@ namespace AltarHelper
         private void ReadFile()
         {
             FilterList.Clear();
-            string[] lines = System.IO.File.ReadAllLines($"{DirectoryFullName}\\{FILTER_FILE}");
-            bool good = false;
+            List<string> lines = File.ReadAllLines($"{DirectoryFullName}\\{FILTER_FILE}").ToList();
+            bool isGood = true;
             foreach (string line in lines)
             {
-                if (line.Length < 4) continue;
-                if (line.Contains("//")) continue;
-                if (line.Contains("#Good"))
+                if (line.Length < 4 || line.StartsWith("//")) continue;
+
+                if (line.StartsWith("#Bad"))
                 {
-                    DebugWindow.LogMsg("Entry Good");
-                    good = true;
+                    isGood = false;
                     continue;
                 }
-                if (line.Trim() == "#Bad")
+                if (line.StartsWith("#Good"))
                 {
-                    DebugWindow.LogMsg("Entry Bad");
-                    good = false;
+                    isGood = true;
                     continue;
                 }
 
-                string[] splitedLine = line.Split('|');
-                Filter f = new Filter();
+                string[] splitLine = line.Split('|');
+                var mod = splitLine[0];
 
-                f.Mod = splitedLine[0].Length > 0 ? splitedLine[0] : "-1";
-                f.Weight = splitedLine[1].Length > 0 ? Int32.Parse(splitedLine[1]) : -1;
+                if (mod.Length <= 0 || splitLine[1].Length <= 0) continue;
 
-                if (splitedLine.Length == 2)
+                FilterEntry filter = new()
                 {
-                    f.Choice = "Any";
-                }
-                else
-                {
-                    f.Choice = splitedLine[2].Length > 0 ? splitedLine[2] : "Any";
-                }
-
-                f.Good = good;
-
-                if (f.Mod == "-1" || f.Weight == -1) continue;
-
-                if (f.Mod.Contains(")") && !f.Mod.Contains("chance to be Duplicated"))
-                {
-                    f.Mod = f.Mod.Substring(f.Mod.IndexOf(")") + 1);
-                }
-                else if (f.Mod.Contains("chance to be Duplicated") && f.Mod.Contains("("))
-                {
-                    f.Mod = f.Mod.Substring(0, f.Mod.IndexOf("("));
-                }
-
-                if (f.Mod.Contains("Scarabs")) f.Mod = f.Mod.Replace("Scarabs", "Scarab");
-                if (f.Mod.Contains("Items")) f.Mod = f.Mod.Replace("Items", "Item");
-                if (f.Mod.Contains("Gems")) f.Mod = f.Mod.Replace("Gems", "Gem");
-                // f.Mod = f.Mod.Trim();
-                FilterList.Add(f);
+                    Mod = mod.Contains('(') && mod.Contains(')') ?
+                        Regex.Replace(mod, @"\([^()]*\)", "#") :
+                        Regex.Replace(mod, @"(\d+)(?:.\d)|\d+", "#"),
+                    Weight = int.Parse(splitLine[1]),
+                    IsUpside = isGood,
+                    Target = splitLine.Length <= 2 ?
+                        AffectedTarget.Any :
+                        AltarModsConstants.FilterTargetDict[splitLine[2]],
+                };
+                FilterList.Add(filter);
             }
-            FilterList.OrderBy(x => x.Weight);
+            _ = FilterList.OrderBy(x => x.Weight);
         }
         public override void Render()
         {
-            foreach (var frame in drawingList)
+            foreach (var frame in RectangleDrawingList)
             {
                 Graphics.DrawFrame(frame.Item1, frame.Item2, frame.Item3);
+            }
+            foreach (var text in TextDrawingList)
+            {
+                Graphics.DrawText(text.Item1, text.Item2, text.Item3);
             }
         }
 
         public override Job Tick()
         {
-            drawingList.Clear();
+            RectangleDrawingList.Clear();
+            TextDrawingList.Clear();
+
             //Mode switching
-            if (Settings.HotkeyMode.PressedOnce())
+            if (Settings.AltarSettings.HotkeyMode.PressedOnce())
             {
-                Settings.SwitchMode.Value += 1;
-                if (Settings.SwitchMode.Value == 4) Settings.SwitchMode.Value = 1;
-                switch (Settings.SwitchMode.Value)
+                Settings.AltarSettings.SwitchMode.Value += 1;
+                if (Settings.AltarSettings.SwitchMode.Value == 4) Settings.AltarSettings.SwitchMode.Value = 1;
+                switch (Settings.AltarSettings.SwitchMode.Value)
                 {
                     case 1:
-                        DebugWindow.LogMsg("Changed to Any Choice");
+                        DebugWindow.LogMsg("AltarHelper: Changed to Any Choice");
                         break;
                     case 2:
-                        DebugWindow.LogMsg("Changed to only Minions and Player Choices");
+                        DebugWindow.LogMsg("AltarHelper: Changed to only Minions and Player Choices");
                         break;
                     case 3:
-                        DebugWindow.LogMsg("Changed to only bosses and Players Choices");
+                        DebugWindow.LogMsg("AltarHelper: Changed to only bosses and Players Choices");
                         break;
                 }
             }
-            //requirements to even run
-            if (!CheckRunRequirements()) return null;
+
+            if (!CanRun()) return null;
+
+            CompareWeights();
+
+            return null;
+        }
+
+        private void CompareWeights()
+        {
             //filter visible labels and work only on the actual altar ones
-            var Altars = GameController.IngameState.IngameUi.ItemsOnGroundLabelsVisible.
-                Where(x =>
-                    x.ItemOnGround.Metadata == "Metadata/MiscellaneousObjects/PrimordialBosses/TangleAltar" ||
-                    x.ItemOnGround.Metadata == "Metadata/MiscellaneousObjects/PrimordialBosses/FireAltar").ToList();
+            var Altars = LabelCache.Value;
+            if (Altars.Count <= 0) return;
             //complicated looking weight logic starts here....
             foreach (var altarlabel in Altars)
             {
-                string upperText = altarlabel.Label.GetChildFromIndices(0, 1)?.Text;
-                string downerText = altarlabel.Label.GetChildFromIndices(1, 1)?.Text;
-                if (upperText == "" || upperText == null || downerText == "" || downerText == null) continue;
+                var topOptionLabel = altarlabel.Label.GetChildAtIndex(0);
+                var bottomOptionLabel = altarlabel.Label.GetChildAtIndex(1);
+                string? topOptionText = topOptionLabel.GetChildAtIndex(1)?.GetText(512);
+                string? bottomOptionText = bottomOptionLabel.GetChildAtIndex(1)?.GetText(512);
 
-                Altar altar = getAltarData(upperText, downerText);
-                int UpperWeight = 0;
-                int DownerWeight = 0;
-                //somethings borked if this check returns true
-                if (altar.Upper.BuffWeight == -1 && altar.Downer.BuffWeight == -1) continue;
+                if (Settings.DebugSettings.DebugRawText == true) DebugWindow.LogError($"AltarBottom Length 512 : {bottomOptionText}");
+                if (Settings.DebugSettings.DebugRawText == true) DebugWindow.LogError($"AltarTop Length 512 : {topOptionText}");
+                if (topOptionText == null || bottomOptionText == null) continue;
 
-                if (Settings.SwitchMode.Value == 2)
+                Altar altar = new(GetSelectionData(topOptionText), GetSelectionData(bottomOptionText));
+                if (altar == null) continue;
+
+                if (altar.Top.UpsideWeight == 0 &&
+                    altar.Bottom.UpsideWeight == 0 &&
+                    altar.Top.DownsideWeight == 0 &&
+                    altar.Bottom.DownsideWeight == 0) continue;
+
+                int topOptionWeight = 0;
+                int bottomOptionWeight = 0;
+
+                if (Settings.AltarSettings.SwitchMode.Value == 2)
                 {
-                    if (altar.Upper.Choice.Contains("Minion") || altar.Upper.Choice.Contains("Player"))
+                    if (altar.Top.Target == AffectedTarget.Minions || altar.Top.Target == AffectedTarget.Player)
                     {
-                        UpperWeight += altar.Upper.BuffWeight - altar.Upper.DebuffWeight;
+                        topOptionWeight += altar.Top.UpsideWeight - altar.Top.DownsideWeight;
                     }
-                    if (altar.Downer.Choice.Contains("Minion") || altar.Downer.Choice.Contains("Player"))
+                    if (altar.Bottom.Target == AffectedTarget.Minions || altar.Bottom.Target == AffectedTarget.Player)
                     {
-                        DownerWeight += altar.Downer.BuffWeight - altar.Downer.DebuffWeight;
+                        bottomOptionWeight += altar.Bottom.UpsideWeight - altar.Bottom.DownsideWeight;
                     }
                 }
-                else if (Settings.SwitchMode.Value == 3)
+                else if (Settings.AltarSettings.SwitchMode.Value == 3)
                 {
-                    if (altar.Upper.Choice.Contains("boss") || altar.Upper.Choice.Contains("Player"))
+                    if (altar.Top.Target == AffectedTarget.FinalBoss || altar.Top.Target == AffectedTarget.Player)
                     {
-                        UpperWeight += altar.Upper.BuffWeight - altar.Upper.DebuffWeight;
+                        topOptionWeight += altar.Top.UpsideWeight - altar.Top.DownsideWeight;
                     }
-                    if (altar.Downer.Choice.Contains("boss") || altar.Downer.Choice.Contains("Player"))
+                    if (altar.Bottom.Target == AffectedTarget.FinalBoss || altar.Bottom.Target == AffectedTarget.Player)
                     {
-                        DownerWeight += altar.Downer.BuffWeight - altar.Downer.DebuffWeight;
+                        bottomOptionWeight += altar.Bottom.UpsideWeight - altar.Bottom.DownsideWeight;
                     }
                 }
                 else
                 {
-                    UpperWeight += altar.Upper.BuffWeight - altar.Upper.DebuffWeight;
-                    DownerWeight += altar.Downer.BuffWeight - altar.Downer.DebuffWeight;
-                }
-                if (altar.Upper.Choice.Contains("Minion")) UpperWeight += Settings.MinionWeight.Value;
-                if (altar.Upper.Choice.Contains("boss")) UpperWeight += Settings.BossWeight.Value;
-                if (altar.Downer.Choice.Contains("Minion")) DownerWeight += Settings.MinionWeight.Value;
-                if (altar.Downer.Choice.Contains("boss")) DownerWeight += Settings.BossWeight.Value;
-                if (Settings.Debug)
-                {
-                    DebugWindow.LogError($"AltarUpperBuff {altar.Upper.Buff} | AltarUpperDebuff {altar.Upper.Debuff}");
-                    DebugWindow.LogError($"AltarUpperBuffWheight {altar.Upper.BuffWeight} | AltarUpperDebuffWeight {altar.Upper.DebuffWeight} | AltarChoice: {altar.Upper.Choice}");
-
-                    DebugWindow.LogError($"AltarDownerBuff {altar.Downer.Buff} | AltarDownerDebuff {altar.Upper.Debuff}");
-                    DebugWindow.LogError($"AltarDownerBuffWheight {altar.Downer.BuffWeight} | AltarDownerDebuffWeight {altar.Downer.DebuffWeight}| AltarChoice: {altar.Downer.Choice}");
-
-                    DebugWindow.LogError($"SwitchMode: {Settings.SwitchMode.Value}");
-                    DebugWindow.LogError($"UpperWeight: {UpperWeight} | DownerWeight: {DownerWeight}");
+                    topOptionWeight += altar.Top.UpsideWeight - altar.Top.DownsideWeight;
+                    bottomOptionWeight += altar.Bottom.UpsideWeight - altar.Bottom.DownsideWeight;
                 }
 
-                if (UpperWeight > DownerWeight && UpperWeight > 0)
+                if (altar.Top.Target == AffectedTarget.Minions) topOptionWeight += Settings.AltarSettings.MinionWeight.Value;
+                if (altar.Top.Target == AffectedTarget.FinalBoss) topOptionWeight += Settings.AltarSettings.BossWeight.Value;
+                if (altar.Bottom.Target == AffectedTarget.Minions) bottomOptionWeight += Settings.AltarSettings.MinionWeight.Value;
+                if (altar.Bottom.Target == AffectedTarget.FinalBoss) bottomOptionWeight += Settings.AltarSettings.BossWeight.Value;
+
+                if (Settings.DebugSettings.DebugWeight)
                 {
-                    drawingList.Add(new Tuple<RectangleF, Color, int>(altarlabel.Label.GetChildAtIndex(0).GetClientRectCache, getColor(altar.Upper.Choice), Settings.FrameThickness));
-                    continue;
+                    TextDrawingList.Add(new(topOptionWeight.ToString(), new Vector2(topOptionLabel.GetClientRectCache.Center.X - 10, topOptionLabel.GetClientRectCache.Top - 25), Color.Cyan));
+                    TextDrawingList.Add(new(bottomOptionWeight.ToString(), new Vector2(bottomOptionLabel.GetClientRectCache.Center.X - 10, bottomOptionLabel.GetClientRectCache.Bottom + 15), Color.Cyan));
+                    //  DebugWindow.LogError($"UpperWeight: {UpperWeight} | DownerWeight: {DownerWeight}");
                 }
-                else if (DownerWeight > UpperWeight && DownerWeight > 0)
+
+                if (topOptionWeight < 0 || bottomOptionWeight < 0)
                 {
-                    drawingList.Add(new Tuple<RectangleF, Color, int>(altarlabel.Label.GetChildAtIndex(1).GetClientRectCache, getColor(altar.Downer.Choice), Settings.FrameThickness));
-                    continue;
+                    if (topOptionWeight < 0) RectangleDrawingList.Add(new(topOptionLabel.GetClientRectCache, Settings.AltarSettings.BadColor, Settings.AltarSettings.FrameThickness));
+                    if (bottomOptionWeight < 0) RectangleDrawingList.Add(new(bottomOptionLabel.GetClientRectCache, Settings.AltarSettings.BadColor, Settings.AltarSettings.FrameThickness));
                 }
-                if (UpperWeight < 0 || DownerWeight < 0)
+
+                if (topOptionWeight >= 0 || bottomOptionWeight >= 0)
                 {
-                    if (UpperWeight < 0) drawingList.Add(new Tuple<RectangleF, Color, int>(altarlabel.Label.GetChildAtIndex(0).GetClientRectCache, getColor(altar.Upper.Choice), Settings.FrameThickness));
-                    if (DownerWeight < 0) drawingList.Add(new Tuple<RectangleF, Color, int>(altarlabel.Label.GetChildAtIndex(1).GetClientRectCache, getColor(altar.Downer.Choice), Settings.FrameThickness));
+                    if (topOptionWeight >= bottomOptionWeight && topOptionWeight > 0) RectangleDrawingList.Add(new(topOptionLabel.GetClientRectCache, GetColor(altar.Top.Target), Settings.AltarSettings.FrameThickness));
+                    if (bottomOptionWeight > topOptionWeight && bottomOptionWeight > 0) RectangleDrawingList.Add(new(bottomOptionLabel.GetClientRectCache, GetColor(altar.Bottom.Target), Settings.AltarSettings.FrameThickness));
                     continue;
                 }
             }
-            return null;
         }
+
         #region helperfunctons
-        public bool CheckRunRequirements()
+        public bool CanRun()
         {
             if (GameController.Area.CurrentArea.IsHideout ||
                 GameController.Area.CurrentArea.IsTown ||
                 GameController.IngameState.IngameUi == null ||
-                GameController.IngameState.IngameUi.ItemsOnGroundLabelsVisible == null)
+                GameController.IngameState.IngameUi.ItemsOnGroundLabelsVisible == null ||
+                LabelCache.Value.Count < 1)
                 return false;
             return true;
         }
         #endregion
 
-        public SharpDX.Color getColor(string choice)
+        public Color GetColor(AffectedTarget choice)
         {
-            SharpDX.Color c = SharpDX.Color.Transparent;
-            if (choice.ToUpper().Contains("MINION")) return Settings.MinionColor;
-            if (choice.ToUpper().Contains("BOSS")) return Settings.BossColor;
-            if (choice.ToUpper().Contains("PLAYER")) return Settings.PlayerColor;
+            Color color = Color.Transparent;
+            if (choice == AffectedTarget.Minions) return Settings.AltarSettings.MinionColor;
+            if (choice == AffectedTarget.FinalBoss) return Settings.AltarSettings.BossColor;
+            if (choice == AffectedTarget.Player) return Settings.AltarSettings.PlayerColor;
 
-            return c;
+            return color;
         }
 
-        public Altar getAltarData(string upperText, string downerText)
+        public Selection GetSelectionData(string altarLabelText)
         {
-            Altar a = new Altar();
-            Select sUpper = new Select();
-            Select sDowner = new Select();
+            AffectedTarget Target;
+            List<string> downsides = new();
+            List<string> upsides = new();
 
-            sUpper = getSelectData(upperText);
-            sDowner = getSelectData(downerText);
-            a.Downer = sDowner;
-            a.Upper = sUpper;
-            return a;
-        }
-
-        public Select getSelectData(string selecterText)
-        {
-            int start = selecterText.IndexOf("{") + 1;
-            int len = selecterText.IndexOf("}") - start;
-            string selecterChoice = selecterText.Substring(start, len);
-
-            start = selecterText.IndexOf("}") + 1;
-            len = selecterText.LastIndexOf("<") - start;
-            string selecterDebuff = selecterText.Substring(start, len).Trim();
-
-            start = selecterText.LastIndexOf("{") + 1;
-            len = selecterText.LastIndexOf("}") - start;
-            string selecterBuff = selecterText.Substring(start, len).Trim();
-
-            selecterDebuff = Regex.Replace(selecterDebuff, @"[\d-]", "|");
-            selecterDebuff = selecterDebuff.Contains("chance to be Duplicated") ? selecterDebuff.Substring(0, selecterDebuff.IndexOf("|")) : selecterDebuff.Substring(selecterDebuff.LastIndexOf("|") + 1);
-
-            selecterBuff = Regex.Replace(selecterBuff, @"[\d-]", "|");
-            selecterBuff = selecterBuff.Contains("chance to be Duplicated") ? selecterBuff.Substring(0, selecterBuff.IndexOf("|")) : selecterBuff.Substring(selecterBuff.LastIndexOf("|") + 1);
-
-
-            if (selecterBuff.Contains("Scarabs")) selecterBuff = selecterBuff.Replace("Scarabs", "Scarab");
-
-            if (selecterBuff.Contains("Items")) selecterBuff = selecterBuff.Replace("Items", "Item");
-
-            if (selecterBuff.Contains("Gems")) selecterBuff = selecterBuff.Replace("Gems", "Gem");
-
-
-            if (Settings.Debug == true)
+            using (StringReader stringreader = new(altarLabelText))
             {
-                DebugWindow.LogError($"SearchBuffer {selecterBuff} | SearchDebuff {selecterDebuff}");
+                string targetLine = stringreader.ReadLine();
+                Target = AltarModsConstants.AltarTargetDict[targetLine[("<valuedefault>{".Length)..^1]];
+
+                string line;
+                bool upsideSectionReached = false;
+
+                while ((line = stringreader.ReadLine()) != null)
+                {
+                    if (line.StartsWith("<enchanted>"))
+                    {
+                        upsideSectionReached = true;
+                    }
+                    if (upsideSectionReached)
+                    {
+                        if (!line.EndsWith("}"))
+                        {
+                            //upside split in two lines; only iiq+iir upside has this
+                            line += stringreader.ReadLine();
+                        }
+                        line = line["<enchanted>{".Length..^1];
+                        if (line.StartsWith("<rgb"))
+                        {
+                            line = line[(line.IndexOf('{') + 1)..^1];
+                        }
+                        //String with range operator to cut trim unneeded tags
+                        upsides.Add(line);
+                        continue;
+                    }
+                    downsides.Add(line);
+                }
             }
-
-            Filter f1 = FilterList.FirstOrDefault(x => x.Mod == (selecterBuff));
-            Filter f2 = FilterList.FirstOrDefault(x => x.Mod == (selecterDebuff));
-
-
-            if (f1 == null && !selecterBuff.Contains("chance to be Duplicated")) f1 = FilterList.FirstOrDefault(x => x.Mod.Contains(selecterBuff));
-            if (f2 == null && !selecterDebuff.Contains("chance to be Duplicated")) f2 = FilterList.FirstOrDefault(x => x.Mod.Contains(selecterDebuff));
-
-
-            //   Filter f1 = FilterList.FirstOrDefault(x => x.Mod.Contains(selecterBuff));
-            // Filter f2 = FilterList.FirstOrDefault(x => x.Mod.Contains(selecterDebuff));
-
-            //DebugWindow.LogError(selecterDebuff);
-            //foreach(Filter f in FilterList)
+            //if (Settings.DebugSettings.DebugRawText)
             //{
-            //    DebugWindow.LogError(f.Mod);
-            //    if (f.Mod.Contains(selecterDebuff.Trim())) DebugWindow.LogError("ENTROU");
+            //    DebugWindow.LogMsg($"Target: {Target}");
+            //    DebugWindow.LogMsg($"Downsides:\n{string.Join('\n', downsides)}");
+            //    DebugWindow.LogMsg($"Upsides:\n{string.Join('\n', upsides)}");
             //}
 
-            Select s = new Select();
-            s.Buff = selecterBuff;
-            s.Debuff = selecterDebuff;
-            s.Choice = selecterChoice;
-            s.BuffWeight = (f1 != null) ? f1.Weight : -1;
-            s.DebuffWeight = (f2 != null) ? f2.Weight : -1;
-            s.BuffGood = (f1 != null) ? f1.Good : false;
-            s.DebuffGood = (f2 != null) ? f2.Good : false;
+            List<FilterEntry> UpsideFilterEntryMatches = new();
+            List<FilterEntry> DownsideFilterEntryMatches = new();
 
-            return s;
+            foreach (string entry in upsides)
+            {
+                var upside = Regex.Replace(entry, @"((\d+)(?:.\d)|\d+)", "#");
+
+                if (Settings.DebugSettings.DebugBuffs) DebugWindow.LogMsg(upside);
+                FilterEntry filterentry = FilterList.FirstOrDefault(element => element.Mod.Contains(upside));
+                if (filterentry == null) continue;
+
+                UpsideFilterEntryMatches.Add(filterentry);
+                if (Settings.DebugSettings.DebugBuffs) DebugWindow.LogMsg($"Bad Mod: {filterentry.Mod}  | Weight {filterentry.Weight}");
+            }
+
+            foreach (string entry in downsides)
+            {
+                if (Settings.DebugSettings.DebugDebuffs) DebugWindow.LogMsg(entry);
+                FilterEntry filterentry = FilterList.FirstOrDefault(element => element.Mod.Contains(entry));
+                if (filterentry == null) continue;
+
+                DownsideFilterEntryMatches.Add(filterentry);
+                if (Settings.DebugSettings.DebugDebuffs) DebugWindow.LogMsg($"Bad Mod: {filterentry.Mod}  | Weight {filterentry.Weight}");
+            }
+
+            Selection selection = new()
+            {
+                Upsides = upsides,
+                Downsides = downsides,
+                Target = Target,
+
+                UpsideWeight = (UpsideFilterEntryMatches.Count > 0) ? UpsideFilterEntryMatches.Sum(x => x.Weight) : 0,
+                DownsideWeight = (DownsideFilterEntryMatches.Count > 0) ? DownsideFilterEntryMatches.Sum(x => x.Weight) : 0,
+                BuffGood = (UpsideFilterEntryMatches.FirstOrDefault(x => x.IsUpside) != null),
+                DebuffGood = (DownsideFilterEntryMatches.FirstOrDefault(x => x.IsUpside) != null),
+            };
+
+            return selection;
         }
 
-        public class Filter
+        public class FilterEntry
         {
             public string Mod { get; set; }
             public int Weight { get; set; }
-            public string Choice { get; set; }
-            public bool Good { get; set; }
+            public AffectedTarget Target { get; set; }
+            public bool IsUpside { get; set; }
         }
+
 
         public class Altar
         {
-            public Select Upper { get; set; }
-            public Select Downer { get; set; }
+            public Selection Top { get; set; }
+            public Selection Bottom { get; set; }
+            public Altar(Selection top, Selection bottom)
+            {
+                Top = top;
+                Bottom = bottom;
+            }
         }
 
-        public class Select
+        public class Selection
         {
-            public string Choice { get; set; }
-            public string Buff { get; set; }
-            public string Debuff { get; set; }
-            public int BuffWeight { get; set; }
-            public int DebuffWeight { get; set; }
+            public AffectedTarget Target { get; set; }
+            public List<string> Downsides { get; set; }
+            public List<string> Upsides { get; set; }
+            public int UpsideWeight { get; set; }
+            public int DownsideWeight { get; set; }
             public bool BuffGood { get; set; }
             public bool DebuffGood { get; set; }
         }
