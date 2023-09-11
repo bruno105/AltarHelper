@@ -3,17 +3,51 @@
 //Scarab
 (1–3)% chance to drop an additional Scarab|100|Minion
 Drops (1–3) additional Scarab|90|Boss
-Scarabs dropped by slain Enemies have (10–15)% chance to be Duplicated|95|Player
+Scarabs dropped by slain Enemies have (15–30)% chance to be Duplicated|95|Player
 
 //Basic Currency And Maps
+Final Boss drops (2–4) additional Divine Orbs|10000|Boss
+Final Boss drops (2–4) additional Exalted Orbs|700|Boss
+Final Boss drops (2–4) additional Awakened Sextants|700|Boss
+Final Boss drops (2–4) additional Regal Orbs|100|Boss
+Final Boss drops (2–4) additional Chaos Orbs|70|Boss
+Final Boss drops (2–4) additional Veiled Chaos Orbs|70|Boss
+(1.6–3.2)% chance to drop an additional Divine Orb|10000|Minion
+(1.6–3.2)% chance to drop an additional Awakened Sextant|700|Minion
+(1.6–3.2)% chance to drop an additional Exalted Orb|700|Minion
+(1.6–3.2)% chance to drop an additional Regal Orb|100|Minion
+(1.6–3.2)% chance to drop an additional Chaos Orb|70|Minion
+(1.6–3.2)% chance to drop an additional Veiled Chaos Orb|70|Minion
 (1–3)% chance to drop an additional Basic Currency Item|90|Minion
 Drops (1–3) additional Basic Currency Item|70|Boss
-Basic Currency Items dropped by slain Enemies have (10–15)% chance to be Duplicated|75|Player
+Basic Currency Items dropped by slain Enemies have (15–30)% chance to be Duplicated|75|Player
 Maps dropped by slain Enemies have (10–15)% chance to be Duplicated|70|Player
 
 //Eldrich Currency
+Final Boss drops (2–4) additional Lesser Eldritch Ichors|90|Boss
+Final Boss drops (2–4) additional Greater Eldritch Ichors|700|Boss
+Final Boss drops (2–4) additional Grand Eldritch Ichors|700|Boss
+Final Boss drops (2–4) additional Lesser Eldritch Embers|90|Boss
+Final Boss drops (2–4) additional Greater Eldritch Embers|700|Boss
+Final Boss drops (2–4) additional Grand Eldritch Embers|700|Boss
+Final Boss drops (2–4) additional Eldritch Chaos Orbs|700|Boss
+Final Boss drops (2–4) additional Eldritch Exalted Orbs|700|Boss
+Final Boss drops (2–4) additional Eldritch Orbs of Annulment|700|Boss
+Final Boss drops (2–4) additional Divine Orbs|1000|Boss
+Final Boss drops (2–4) additional Orbs of Unmaking|700|Boss
+(1.6–3.2)% chance to drop an additional Lesser Eldritch Ichor|90|Minion
+(1.6–3.2)% chance to drop an additional Greater Eldritch Ichor|700|Minion
+(1.6–3.2)% chance to drop an additional Grand Eldritch Ichor|700|Minion
+(1.6–3.2)% chance to drop an additional Lesser Eldritch Ember|90|Minion
+(1.6–3.2)% chance to drop an additional Greater Eldritch Ember|700|Minion
+(1.6–3.2)% chance to drop an additional Grand Eldritch Ember|700|Minion
+(1.6–3.2)% chance to drop an additional Eldritch Chaos Orb|700|Minion
+(1.6–3.2)% chance to drop an additional Eldritch Exalted Orb|700|Minion
+(1.6–3.2)% chance to drop an additional Eldritch Orb of Annulment|700|Minion
 (0.5–1.5)% chance to drop an additional Eldritch Ichor Currency Item|65|Minion
 (0.5–1.5)% chance to drop an additional Eldritch Ember Currency Item|65|Minion
+(1.6–3.2)% chance to drop an additional Divine Orb|1000|Minion
+(1.6–3.2)% chance to drop an additional Orb of Unmaking|500|Minion
 Drops (1–2) additional Eldritch Ichor Currency Item|60|Boss
 Drops (1–2) additional Eldritch Ember Currency Item|60|Boss
 
@@ -25,7 +59,7 @@ Gems dropped by slain Enemies have (10–15)% chance to be Duplicated|20|Player
 //Uniques
 (1–3)% chance to drop an additional Unique Item|30|Minion
 Drops (1–3) additional Unique Item|30|Boss
-Unique Items dropped by slain Enemies have (10–15)% chance to be Duplicated|30|Player
+Unique Items dropped by slain Enemies have (10–20)% chance to be Duplicated|30|Player
 
 //Implicite Modifiers
 1% chance to drop an additional Item with an Eater of Worlds Implicit Modifier|15|Minion
@@ -35,10 +69,11 @@ Drops (1–2) additional Item with a Searing Exarch Implicit Modifier|15|Boss
 
 //Quantity
 (15–35)% increased Rarity of Items found in this Area|35|Player
+(15-35)% increased Quantity of Items found in this Area|35|Player
 Maps dropped by slain Enemies have (10–15)% chance to be Duplicated|40|Player
-
+Basic Currency Items dropped by slain Enemies have (15–30)% chance to be Duplicated|100|Player
+Maps dropped by slain Enemies have (15–30)% chance to be Duplicated|100|Player
 #Bad
 Projectiles are fired in random directions|9999|Player
-
-
-
+Take 600 Chaos Damage per second during any Flask Effect|9999|Player
+30% chance to be targeted by a Meteor when you use a Flask|9999|Player
