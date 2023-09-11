@@ -1,34 +1,32 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-	  <TargetFramework>net6.0-windows</TargetFramework>
-	  <OutputType>Library</OutputType>
-	  <UseWindowsForms>true</UseWindowsForms>
-	  <PlatformTarget>x64</PlatformTarget>
-	  <LangVersion>latest</LangVersion>
-	  <DebugType>embedded</DebugType>
-	  <PathMap>$(MSBuildProjectDirectory)=$(MSBuildProjectName)</PathMap>
-	  <EmbedAllSources>true</EmbedAllSources>
-	  <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <OutputType>Library</OutputType>
+    <UseWindowsForms>true</UseWindowsForms>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>latest</LangVersion>
+    <DebugType>embedded</DebugType>
+    <PathMap>$(MSBuildProjectDirectory)=$(MSBuildProjectName)</PathMap>
+    <EmbedAllSources>true</EmbedAllSources>
+	<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <!--Don't bother setting anything to do with the output path, HUD will do it for you if you put the source code inside Plugins/Source-->
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="ExileCore">
-      <HintPath>..\..\..\ExileCore.dll</HintPath>
-    </Reference>
-    <Reference Include="GameOffsets">
-      <HintPath>..\..\..\GameOffsets.dll</HintPath>
-    </Reference>
-    <Reference Include="ImGui.NET">
-      <HintPath>..\..\..\ImGui.NET.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpDX">
-      <HintPath>..\..\..\SharpDX.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpDX.Mathematics">
-      <HintPath>..\..\..\SharpDX.Mathematics.dll</HintPath>
-    </Reference>
-
+    <PackageReference Include="ImGui.NET" Version="1.88.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="SharpDX.Mathematics" Version="4.2.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="ExileCore">
+      <HintPath>..\..\ExileCore.dll</HintPath>
+    </Reference>
+    <Reference Include="GameOffsets">
+      <HintPath>..\..\GameOffsets.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+		<Exec Command="XCOPY &quot;$(OutDir)*.*&quot; &quot;$(exapiPackage)\Plugins\Compiled\$(TargetName)\&quot; /S /Y" />
+	</Target>
 </Project>

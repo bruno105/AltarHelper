@@ -1,6 +1,5 @@
 ﻿using ExileCore;
 using System.Collections.Generic;
-using System.Linq;
 using System.IO;
 using System.Text.RegularExpressions;
 using ExileCore.PoEMemory.Elements;
@@ -218,6 +217,11 @@ public class AltarHelperCore : BaseSettingsPlugin<Settings>
                 DebugWindow.LogMsg($"Bad Mod: {foundDebuff.Mod}  | Weight {foundDebuff.Weight}");
             }
         }
+                UpsideWeight = (UpsideFilterEntryMatches.Count > 0) ? UpsideFilterEntryMatches.Sum(x => x.Weight) : 0,
+                DownsideWeight = (DownsideFilterEntryMatches.Count > 0) ? DownsideFilterEntryMatches.Sum(x => x.Weight) : 0,
+                BuffGood = (UpsideFilterEntryMatches.FirstOrDefault(x => x.IsUpside) != null),
+                DebuffGood = (DownsideFilterEntryMatches.FirstOrDefault(x => x.IsUpside) != null),
+            };
 
         var s = new Select
         {
