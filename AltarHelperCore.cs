@@ -7,11 +7,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Sytem.Linq;
-
+using System.Linq;
+using System.Runtime.Versioning;
 
 namespace AltarHelper
 {
+    [SupportedOSPlatform("windows")]
     public class AltarHelperCore : BaseSettingsPlugin<Settings>
     {
         private const string FILTER_FILE = "Filter.txt";
@@ -262,21 +263,18 @@ namespace AltarHelper
 
                 string line;
                 bool upsideSectionReached = false;
-
+                
                 while ((line = stringreader.ReadLine()) != null)
                 {
+                   
                     if (line.StartsWith("<enchanted>"))
                     {
                         upsideSectionReached = true;
                     }
                     if (upsideSectionReached)
                     {
-                        if (!line.EndsWith("}"))
-                        {
-                            //upside split in two lines; only iiq+iir upside has this
-                            line += stringreader.ReadLine();
-                        }
-                        line = line["<enchanted>{".Length..^1];
+                        line = (line.StartsWith("<enchanted>")) ? line.Replace("<enchanted>{", "") : line.Replace("}","");
+                        if (line.Contains('}')) line = line.Replace("}", "");
                         if (line.StartsWith("<rgb"))
                         {
                             line = line[(line.IndexOf('{') + 1)..^1];
@@ -300,14 +298,16 @@ namespace AltarHelper
 
             foreach (string entry in upsides)
             {
+               
                 var upside = Regex.Replace(entry, @"((\d+)(?:.\d)|\d+)", "#");
+               
 
                 if (Settings.DebugSettings.DebugBuffs) DebugWindow.LogMsg(upside);
                 FilterEntry filterentry = FilterList.FirstOrDefault(element => element.Mod.Contains(upside));
                 if (filterentry == null) continue;
 
                 UpsideFilterEntryMatches.Add(filterentry);
-                if (Settings.DebugSettings.DebugBuffs) DebugWindow.LogMsg($"Bad Mod: {filterentry.Mod}  | Weight {filterentry.Weight}");
+                if (Settings.DebugSettings.DebugBuffs) DebugWindow.LogMsg($"Good Mod: {filterentry.Mod}  | Weight {filterentry.Weight}");
             }
 
             foreach (string entry in downsides)
