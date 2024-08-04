@@ -7,15 +7,22 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Linq;
+using System.Runtime.Versioning;
 
 namespace AltarHelper
 {
+    [SupportedOSPlatform("windows")]
     public class AltarHelperCore : BaseSettingsPlugin<Settings>
     {
         private const string FILTER_FILE = "Filter.txt";
         public List<FilterEntry> FilterList = new();
         public List<Tuple<RectangleF, Color, int>> RectangleDrawingList = new();
         public List<Tuple<string, Vector2, Color>> TextDrawingList = new();
+        // Sound Area
+        private readonly object _locker = new object();
+        private DateTime _lastPlayed;
+        // Sound Area
         private FrameCache<List<LabelOnGround>> LabelCache { get; set; }
 
         public override bool Initialise()
@@ -23,6 +30,8 @@ namespace AltarHelper
             Name = "AltarHelper";
             Settings.AltarSettings.RefreshFile.OnPressed += ReadFilterFile;
             ReadFilterFile();
+            //PlaySound();
+
             LabelCache = new FrameCache<List<LabelOnGround>>(UpdateAltarLabelList);
             return true;
         }
@@ -63,6 +72,8 @@ namespace AltarHelper
             FilterList.Clear();
             List<string> lines = File.ReadAllLines($"{DirectoryFullName}\\{FILTER_FILE}").ToList();
             bool isGood = true;
+
+            List<string> listAux = new List<string>();
             foreach (string line in lines)
             {
                 if (line.Length < 4 || line.StartsWith("//")) continue;
@@ -95,8 +106,8 @@ namespace AltarHelper
                         AltarModsConstants.FilterTargetDict[splitLine[2]],
                 };
                 FilterList.Add(filter);
+                listAux.Add(mod);
             }
-            _ = FilterList.OrderBy(x => x.Weight);
         }
         public override void Render()
         {
@@ -169,6 +180,8 @@ namespace AltarHelper
                 int topOptionWeight = 0;
                 int bottomOptionWeight = 0;
 
+               
+
                 if (Settings.AltarSettings.SwitchMode.Value == 2)
                 {
                     if (altar.Top.Target == AffectedTarget.Minions || altar.Top.Target == AffectedTarget.Player)
@@ -193,14 +206,15 @@ namespace AltarHelper
                 }
                 else
                 {
-                    topOptionWeight += altar.Top.UpsideWeight - altar.Top.DownsideWeight;
-                    bottomOptionWeight += altar.Bottom.UpsideWeight - altar.Bottom.DownsideWeight;
+                    topOptionWeight += altar.Top.UpsideWeight + altar.Top.DownsideWeight;
+                    bottomOptionWeight += altar.Bottom.UpsideWeight + altar.Bottom.DownsideWeight;
                 }
 
                 if (altar.Top.Target == AffectedTarget.Minions) topOptionWeight += Settings.AltarSettings.MinionWeight.Value;
                 if (altar.Top.Target == AffectedTarget.FinalBoss) topOptionWeight += Settings.AltarSettings.BossWeight.Value;
                 if (altar.Bottom.Target == AffectedTarget.Minions) bottomOptionWeight += Settings.AltarSettings.MinionWeight.Value;
                 if (altar.Bottom.Target == AffectedTarget.FinalBoss) bottomOptionWeight += Settings.AltarSettings.BossWeight.Value;
+                if (altar.Bottom.PlayAlert || altar.Top.PlayAlert) PlaySound();
 
                 if (Settings.DebugSettings.DebugWeight)
                 {
@@ -224,6 +238,10 @@ namespace AltarHelper
             }
         }
 
+
+
+
+
         #region helperfunctons
         public bool CanRun()
         {
@@ -235,6 +253,21 @@ namespace AltarHelper
                 return false;
             return true;
         }
+
+
+        private void PlaySound()
+        {
+            lock (_locker)
+            {
+                if ((DateTime.Now - _lastPlayed).TotalMilliseconds > Settings.AltarSettings.DelayBetweenAlerts && (DateTime.Now - _lastPlayed).TotalMilliseconds > 500)
+                {
+                     GameController.SoundController.PlaySound(Path.Combine(@"..\Sounds\", "diviners").Replace('\\', '/'));
+                    _lastPlayed = DateTime.Now;
+                }
+            }
+        }
+
+
         #endregion
 
         public Color GetColor(AffectedTarget choice)
@@ -260,21 +293,18 @@ namespace AltarHelper
 
                 string line;
                 bool upsideSectionReached = false;
-
+                // LogError("Ets");
                 while ((line = stringreader.ReadLine()) != null)
                 {
+
                     if (line.StartsWith("<enchanted>"))
                     {
                         upsideSectionReached = true;
                     }
                     if (upsideSectionReached)
                     {
-                        if (!line.EndsWith("}"))
-                        {
-                            //upside split in two lines; only iiq+iir upside has this
-                            line += stringreader.ReadLine();
-                        }
-                        line = line["<enchanted>{".Length..^1];
+                        line = (line.StartsWith("<enchanted>")) ? line.Replace("<enchanted>{", "") : line.Replace("}", "");
+                        if (line.Contains('}')) line = line.Replace("}", "");
                         if (line.StartsWith("<rgb"))
                         {
                             line = line[(line.IndexOf('{') + 1)..^1];
@@ -298,20 +328,27 @@ namespace AltarHelper
 
             foreach (string entry in upsides)
             {
+
                 var upside = Regex.Replace(entry, @"((\d+)(?:.\d)|\d+)", "#");
 
+
                 if (Settings.DebugSettings.DebugBuffs) DebugWindow.LogMsg(upside);
-                FilterEntry filterentry = FilterList.FirstOrDefault(element => element.Mod.Contains(upside));
+                var filterentry = GetEntry(upside);
+               // FilterEntry filterentry = FilterList.FirstOrDefault(element => element.Mod.Contains(upside));
                 if (filterentry == null) continue;
 
                 UpsideFilterEntryMatches.Add(filterentry);
-                if (Settings.DebugSettings.DebugBuffs) DebugWindow.LogMsg($"Bad Mod: {filterentry.Mod}  | Weight {filterentry.Weight}");
+                if (Settings.DebugSettings.DebugBuffs) DebugWindow.LogMsg($"Good Mod: {filterentry.Mod}  | Weight {filterentry.Weight}");
             }
 
             foreach (string entry in downsides)
             {
+                var downside = Regex.Replace(entry, @"((\d+)(?:.\d)|\d+)", "#");
                 if (Settings.DebugSettings.DebugDebuffs) DebugWindow.LogMsg(entry);
-                FilterEntry filterentry = FilterList.FirstOrDefault(element => element.Mod.Contains(entry));
+
+                var filterentry = GetEntry(downside);
+
+                //FilterEntry filterentry = FilterList.FirstOrDefault(element => element.Mod.Contains(downside));
                 if (filterentry == null) continue;
 
                 DownsideFilterEntryMatches.Add(filterentry);
@@ -328,9 +365,39 @@ namespace AltarHelper
                 DownsideWeight = (DownsideFilterEntryMatches.Count > 0) ? DownsideFilterEntryMatches.Sum(x => x.Weight) : 0,
                 BuffGood = (UpsideFilterEntryMatches.FirstOrDefault(x => x.IsUpside) != null),
                 DebuffGood = (DownsideFilterEntryMatches.FirstOrDefault(x => x.IsUpside) != null),
+                PlayAlert = (UpsideFilterEntryMatches.FirstOrDefault(x => x.Alert == true) != null) || (DownsideFilterEntryMatches.FirstOrDefault(x => x.Alert == true) != null)
             };
 
             return selection;
+        }
+
+
+
+
+        public FilterEntry GetEntry(string mod)
+        {
+            var modWeight = Settings.GetModTier(mod);
+
+            var modAlert = Settings.GetModAlert(mod);
+
+            var modName = mod.Contains('(') && mod.Contains(')') ?
+                            Regex.Replace(mod, @"\([^()]*\)", "#") :
+                            Regex.Replace(mod, @"(\d+)(?:.\d)|\d+", "#");
+
+            var modType = AltarModsConstants.AltarTypes.FirstOrDefault(t => t.Id.Contains(mod, StringComparison.InvariantCultureIgnoreCase)).Type;
+
+
+            FilterEntry filter = new()
+            {
+                        Mod = modName,
+                        Weight = modWeight,
+                        IsUpside = modWeight > 0? true : false,
+                        Target = modType == null ?
+                AffectedTarget.Any :
+                AltarModsConstants.FilterTargetDict[modType],
+                Alert = modAlert
+            };
+            return filter;
         }
 
         public class FilterEntry
@@ -339,6 +406,7 @@ namespace AltarHelper
             public int Weight { get; set; }
             public AffectedTarget Target { get; set; }
             public bool IsUpside { get; set; }
+            public bool? Alert { get; set; } = false;
         }
 
 
@@ -362,6 +430,8 @@ namespace AltarHelper
             public int DownsideWeight { get; set; }
             public bool BuffGood { get; set; }
             public bool DebuffGood { get; set; }
+            public bool PlayAlert { get; set; } = false;
+
         }
     }
 }
