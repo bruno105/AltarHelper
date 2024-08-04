@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Windows.Forms;
 using ExileCore.Shared.Attributes;
 using ExileCore.Shared.Interfaces;
@@ -116,6 +117,8 @@ namespace AltarHelper
        
         public ButtonNode RefreshFile { get; set; } = new ButtonNode();
         public RangeNode<int> FrameThickness { get; set; } = new RangeNode<int>(2, 1, 5);
+        [Menu("Alert sound", "Wav file, localizend in PoeHelper/Sounds/")]
+        public TextNode SoundFile { get; set; } = new TextNode("alert.wav");
         [Menu("Delay between Sounds", "1 Second = 1000")]
         public RangeNode<int> DelayBetweenAlerts { get; set; } = new RangeNode<int>(3000, 1000,10000);
         public ColorNode MinionColor { get; set; } = new ColorNode(SharpDX.Color.LightGreen);

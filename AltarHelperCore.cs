@@ -261,7 +261,7 @@ namespace AltarHelper
             {
                 if ((DateTime.Now - _lastPlayed).TotalMilliseconds > Settings.AltarSettings.DelayBetweenAlerts && (DateTime.Now - _lastPlayed).TotalMilliseconds > 500)
                 {
-                     GameController.SoundController.PlaySound(Path.Combine(@"..\Sounds\", "diviners").Replace('\\', '/'));
+                     GameController.SoundController.PlaySound(Path.Combine(@"..\Sounds\", Settings.AltarSettings.SoundFile.Value.Replace(".wav","")).Replace('\\', '/'));
                     _lastPlayed = DateTime.Now;
                 }
             }
