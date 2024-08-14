@@ -1,18 +1,26 @@
 # AltarHelper
 Highlights the best option from Primordial Altar based on a Filter.
 The plugin use a system of Weight to calculate the bes option.
-The pattern of file is Mod|Weight|Choice
-
 
 How to use:
 
 1. Start Plugin.  
-2. Open "Filter.txt" File located in the Pluginfolder  
-3. Copy Paste the mod name  (can be found here  "http://www.vhpg.com/primordial-altar/")
-4. Use | to separete the Mod name from Weight and Choice
-5. In PluginMenu Press "Refresh File"
+2. Configure the weight of mods inside plugin settings
+3. Have fun.
 
-P.S Also u can use Thanos#6505 Sheet to make your filter
+
+
+Special Thanks for #thanos6505 for help me with mods settings and tests
+
+
+
+
+======================04-08-24=====================
+* Rewrote the Filter Setting logic
+  - Now u dont need a filter.txt, all the configs mods are inside of plugin
+  - U can share ur filter with file localized in PoeHelper/configs/globals/AltarHelper_settings.json
+* Added a feature to play a alert sound
+  - U need a audio file .wav inside PoeHelper/Sounds/
 
 ======================26-12=====================
 * Rewrote the whole concept of reading mods and regex
