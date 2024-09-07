@@ -251,7 +251,7 @@ namespace AltarHelper
             ("#% chance to drop an additional Reliquary Scarab", "(1.6–3.2)%% chance to drop an additional Reliquary Scarab", "Minion"),
             ("-#% to Cold Resistance", "(-60–-40)%% to Cold Resistance", "Player"),
             ("-#% to Lightning Resistance", "(-60–-40)%% to Lightning Resistance", "Player"),
-            ("#% additional Physical Damage Reduction", "(-60–-40)%% additional Physical Damage Reduction", "Player"),
+            ("-#% additional Physical Damage Reduction", "(-60–-40)%% additional Physical Damage Reduction", "Player"),
             ("#% reduced Defences per Frenzy Charge", "(30–50)%% reduced Defences per Frenzy Charge", "Player"),
             ("#% reduced Recovery Rate of Life, Mana and Energy Shield per Endurance Charge", "(10–20)%% reduced Recovery Rate of Life, Mana and Energy Shield per Endurance Charge", "Player"),
             ("#% to Critical Strike Multiplier per Power Charge", "(-40–-20)%% to Critical Strike Multiplier per Power Charge", "Player"),
