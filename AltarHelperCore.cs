@@ -98,7 +98,7 @@ namespace AltarHelper
                 {
                     Mod = mod.Contains('(') && mod.Contains(')') ?
                         Regex.Replace(mod, @"\([^()]*\)", "#") :
-                        Regex.Replace(mod, @"(\d+)(?:.\d)|\d+", "#"),
+                        Regex.Replace(mod, @"((\d+)(?:.\d)|\d+|\-(\d+)(?:.\d)|-\d+)", "#"),
                     Weight = int.Parse(splitLine[1]),
                     IsUpside = isGood,
                     Target = splitLine.Length <= 2 ?
@@ -329,7 +329,7 @@ namespace AltarHelper
             foreach (string entry in upsides)
             {
 
-                var upside = Regex.Replace(entry, @"((\d+)(?:.\d)|\d+)", "#");
+                var upside = Regex.Replace(entry, @"((\d+)(?:.\d)|\d+|\-(\d+)(?:.\d)|-\d+)", "#");
 
 
                 if (Settings.DebugSettings.DebugBuffs) DebugWindow.LogMsg(upside);
@@ -343,7 +343,7 @@ namespace AltarHelper
 
             foreach (string entry in downsides)
             {
-                var downside = Regex.Replace(entry, @"((\d+)(?:.\d)|\d+)", "#");
+                var downside = Regex.Replace(entry, @"((\d+)(?:.\d)|\d+|\-(\d+)(?:.\d)|-\d+)", "#");
                 if (Settings.DebugSettings.DebugDebuffs) DebugWindow.LogMsg(entry);
 
                 var filterentry = GetEntry(downside);
@@ -382,7 +382,7 @@ namespace AltarHelper
 
             var modName = mod.Contains('(') && mod.Contains(')') ?
                             Regex.Replace(mod, @"\([^()]*\)", "#") :
-                            Regex.Replace(mod, @"(\d+)(?:.\d)|\d+", "#");
+                            Regex.Replace(mod, @"((\d+)(?:.\d)|\d+|\-(\d+)(?:.\d)|-\d+)", "#");
 
             var modType = AltarModsConstants.AltarTypes.FirstOrDefault(t => t.Id.Contains(mod, StringComparison.InvariantCultureIgnoreCase)).Type;
 
